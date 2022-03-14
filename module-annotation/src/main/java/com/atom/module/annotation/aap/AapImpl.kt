@@ -1,0 +1,17 @@
+package com.atom.module.aap.annotation
+
+import kotlin.reflect.KClass
+
+/**
+ * All rights Reserved, Designed By www.rongdasoft.com
+ * @version V1.0
+ * @Title: AapImpl
+ * @Description:
+ * @author: wuyongzheng
+ * @date: 2022/1/19
+ * @Copyright: 2022/1/19 www.rongdasoft.com Inc. All rights reserved.
+ */
+@MustBeDocumented
+@kotlin.annotation.Target(AnnotationTarget.CLASS)
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+annotation class AapImpl(val api: KClass<*>, val name: String = "", val version: Int = 0)

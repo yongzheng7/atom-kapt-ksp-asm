@@ -1,0 +1,17 @@
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        jcenter() // Warning: this repository is going to shut down soon
+    }
+}
+rootProject.name = "test-plugin-compiler"
+include ':app'
+include ':module-annotation'
+include ':module-core'
+include ':compiler-apt'
+include ':compiler-ksp'
+include ':plugin-asm'
+include ':compiler-test-ksp'
+include ':compiler-test-core'
