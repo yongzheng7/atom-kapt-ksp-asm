@@ -1,6 +1,6 @@
-package com.atom.compile.core.test
+package com.atom.compiler.test.core.test
 
-import com.atom.compile.core.*
+import com.atom.compiler.test.core.*
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.verify

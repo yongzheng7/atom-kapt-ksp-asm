@@ -1,4 +1,4 @@
-package com.atom.compile.ksp
+package com.atom.compiler.test.ksp
 
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated

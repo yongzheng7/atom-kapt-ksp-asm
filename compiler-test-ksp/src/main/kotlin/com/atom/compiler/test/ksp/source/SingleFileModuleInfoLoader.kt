@@ -1,4 +1,4 @@
-package com.atom.compile.ksp.source
+package com.atom.compiler.test.ksp.source
 
 import java.io.File
 

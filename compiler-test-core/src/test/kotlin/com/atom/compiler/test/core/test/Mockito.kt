@@ -1,4 +1,4 @@
-package com.atom.compile.core.test
+package com.atom.compiler.test.core.test
 
 import com.nhaarman.mockitokotlin2.internal.createInstance
 import org.mockito.AdditionalMatchers

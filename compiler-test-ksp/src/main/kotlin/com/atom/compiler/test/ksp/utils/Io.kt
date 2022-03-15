@@ -1,4 +1,4 @@
-package com.atom.compile.ksp.utils
+package com.atom.compiler.test.ksp.utils
 
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream

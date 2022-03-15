@@ -1,9 +1,9 @@
 /**
  * Adds support for KSP (https://goo.gle/ksp).
  */
-package com.atom.compile.ksp
+package com.atom.compiler.test.ksp
 
-import com.atom.compile.core.KotlinCompilation
+import com.atom.compiler.test.core.KotlinCompilation
 import com.google.devtools.ksp.AbstractKotlinSymbolProcessingExtension
 import com.google.devtools.ksp.KspOptions
 import com.google.devtools.ksp.processing.KSPLogger

@@ -1,7 +1,7 @@
-package com.atom.compile.core.test
+package com.atom.compiler.test.core.test
 
-import com.atom.compile.core.isJavac9OrLater
-import com.atom.compile.core.parseVersionString
+import com.atom.compiler.test.core.isJavac9OrLater
+import com.atom.compiler.test.core.parseVersionString
 import org.junit.Assert.*
 import org.junit.Test
 

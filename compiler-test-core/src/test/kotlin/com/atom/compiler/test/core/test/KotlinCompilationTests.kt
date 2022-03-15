@@ -1,9 +1,9 @@
-package com.atom.compile.core.test
+package com.atom.compiler.test.core.test
 
-import com.atom.compile.core.*
 import com.nhaarman.mockitokotlin2.*
-import com.atom.compile.core.KotlinCompilation.ExitCode
-import com.atom.compile.core.test.MockitoAdditionalMatchersKotlin.Companion.not
+import com.atom.compiler.test.core.KotlinCompilation.ExitCode
+import com.atom.compiler.test.core.test.MockitoAdditionalMatchersKotlin.Companion.not
+import com.atom.compiler.test.core.*
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
@@ -208,7 +208,7 @@ class KotlinCompilationTests {
             "JSource.java", """
 			package com.atom.compile.core;
 		
-			import com.atom.compile.core.test.KotlinCompilationTests;
+			import com.atom.compiler.test.core.test.KotlinCompilationTests;
 			
 			class JSource {
 				void foo() {
@@ -237,7 +237,7 @@ class KotlinCompilationTests {
             "JSource.java", """
 			package com.atom.compile.core;
 		
-			import com.atom.compile.core.test.KotlinCompilationTests;
+			import com.atom.compiler.test.core.test.KotlinCompilationTests;
 			
 			class JSource {
 				void foo() {

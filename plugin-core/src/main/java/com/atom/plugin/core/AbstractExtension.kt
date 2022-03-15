@@ -1,5 +1,7 @@
 package com.atom.plugin.core
 
+import com.sun.org.apache.xpath.internal.operations.Bool
+
 /**
  * All rights Reserved, Designed By www.rongdasoft.com
  * @version V1.0
@@ -17,11 +19,13 @@ abstract class AbstractExtension {
 
     var variantRun: Boolean? = null
 
+    var runSingle: Boolean = false
+
     var include: MutableList<String> = arrayListOf()
 
     var exclude: MutableList<String> = arrayListOf()
 
     override fun toString(): String {
-        return "AbstractExtension(enableUse=$enableUse, enableLog=$enableLog, variantRun=$variantRun, include=$include, exclude=$exclude)"
+        return "AbstractExtension(enableUse=$enableUse, enableLog=$enableLog, variantRun=$variantRun, runSingle=$runSingle, include=$include, exclude=$exclude)"
     }
 }

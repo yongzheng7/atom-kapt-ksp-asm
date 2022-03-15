@@ -1,6 +1,5 @@
 package com.atom.compiler.test.core
 
-import com.atom.compile.core.isJdk9OrLater
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import javax.tools.JavaCompiler

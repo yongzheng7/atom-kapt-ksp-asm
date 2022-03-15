@@ -1,13 +1,13 @@
-package com.atom.compile.ksp.module
+package com.atom.compiler.test.ksp.module
 
-import com.atom.compile.core.KotlinCompilation
-import com.atom.compile.core.SourceFile
-import com.atom.compile.ksp.kspArgs
-import com.atom.compile.ksp.kspSourcesDir
-import com.atom.compile.ksp.symbolProcessorProviders
-import com.atom.compile.ksp.source.Entry
-import com.atom.compile.ksp.source.SourceModuleInfo
-import com.atom.compile.ksp.utils.captureStdOut
+import com.atom.compiler.test.core.KotlinCompilation
+import com.atom.compiler.test.core.SourceFile
+import com.atom.compiler.test.ksp.kspArgs
+import com.atom.compiler.test.ksp.kspSourcesDir
+import com.atom.compiler.test.ksp.symbolProcessorProviders
+import com.atom.compiler.test.ksp.source.Entry
+import com.atom.compiler.test.ksp.source.SourceModuleInfo
+import com.atom.compiler.test.ksp.utils.captureStdOut
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import java.io.File

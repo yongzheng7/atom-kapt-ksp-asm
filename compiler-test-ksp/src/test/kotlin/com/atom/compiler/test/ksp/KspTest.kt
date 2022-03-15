@@ -1,8 +1,8 @@
-package com.atom.compile.ksp
+package com.atom.compiler.test.ksp
 
-import com.atom.compile.core.KotlinCompilation
-import com.atom.compile.core.KotlinCompilation.*
-import com.atom.compile.core.SourceFile
+import com.atom.compiler.test.core.KotlinCompilation
+import com.atom.compiler.test.core.KotlinCompilation.*
+import com.atom.compiler.test.core.SourceFile
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration

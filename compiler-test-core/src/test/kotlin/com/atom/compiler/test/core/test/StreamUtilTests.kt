@@ -1,10 +1,9 @@
-package com.atom.compile.core.test
+package com.atom.compiler.test.core.test
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
-import com.atom.compile.core.TeeOutputStream
+import com.atom.compiler.test.core.TeeOutputStream
 import okio.Buffer
-import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

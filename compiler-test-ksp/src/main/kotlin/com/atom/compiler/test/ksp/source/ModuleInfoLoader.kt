@@ -1,4 +1,4 @@
-package com.atom.compile.ksp.source
+package com.atom.compiler.test.ksp.source
 
 /**
  * Created by benny at 2022/1/7 10:28 AM.

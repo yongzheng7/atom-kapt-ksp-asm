@@ -1,4 +1,4 @@
-package com.atom.compile.ksp.result
+package com.atom.compiler.test.ksp.result
 
 /**
  * Created by benny at 2022/1/9 11:19 AM.
