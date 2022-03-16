@@ -210,7 +210,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         }
     }
 
-    fun getAllFiles(@NonNull dir: File): FluentIterable<File> {
+    private fun getAllFiles(@NonNull dir: File): FluentIterable<File> {
         return FluentIterable.from(Files.fileTraverser().depthFirstPreOrder(dir))
             .filter(Files.isFile())
     }
