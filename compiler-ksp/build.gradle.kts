@@ -13,6 +13,7 @@ dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-api:1.6.10-1.0.2")
     implementation("com.squareup:kotlinpoet:1.10.0")
     implementation("com.squareup:kotlinpoet-ksp:1.10.0")
+    implementation("com.squareup:javapoet:1.13.0")
     implementation(project(":module-annotation"))
     testImplementation(project(":compiler-test-ksp"))
 }
