@@ -5,9 +5,11 @@ import com.android.build.api.transform.*
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.atom.plugin.core.ext.eachFileRecurse
 import com.google.common.collect.FluentIterable
 import com.google.common.collect.Sets
 import com.google.common.io.Files
+import groovy.io.FileType
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
@@ -200,8 +202,12 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         if (isIncremental) {
             directoryInput.changedFiles.forEach(biConsumer)
         } else {
+            eachFileRecurse(directoryInput.file, FileType.ANY) { file ->
+                Log.e("eachFileRecurse 1 ${file.absolutePath}")
+            }
             getAllFiles(directoryInput.file)
                 .forEach(Consumer { file: File ->
+                    Log.e("eachFileRecurse 2 ${file.absolutePath}")
                     biConsumer.accept(
                         file,
                         Status.ADDED
