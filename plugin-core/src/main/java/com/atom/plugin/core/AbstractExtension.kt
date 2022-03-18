@@ -1,7 +1,5 @@
 package com.atom.plugin.core
 
-import com.sun.org.apache.xpath.internal.operations.Bool
-
 /**
  * All rights Reserved, Designed By www.rongdasoft.com
  * @version V1.0
