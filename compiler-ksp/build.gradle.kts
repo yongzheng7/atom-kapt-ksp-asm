@@ -21,8 +21,8 @@ dependencies {
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
         freeCompilerArgs = listOf(
-            "-Xuse-experimental=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview",
-            "-Xuse-experimental=com.google.devtools.ksp.KspExperimental"
+            "-opt-in=com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview",
+            "-opt-in=com.google.devtools.ksp.KspExperimental"
         )
     }
 }

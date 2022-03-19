@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'kotlin'
     id 'maven-publish'
+    id 'java-gradle-plugin'
 }
 
 java {
@@ -17,11 +18,22 @@ dependencies {
     implementation "com.android.tools.build:gradle-api:$gradle_version"
     implementation "com.android.tools.build:gradle:$gradle_version"
 
-    implementation 'commons-io:commons-io:2.6'
-    implementation "commons-codec:commons-codec:1.15"
+    api 'commons-io:commons-io:2.6'
+    api "commons-codec:commons-codec:1.15"
 
     implementation 'org.mockito:mockito-core:4.2.0'
     implementation 'junit:junit:4.13.2'
+}
+
+gradlePlugin {
+    plugins {
+        version {
+            // 在 app 模块需要通过 id 引用这个插件
+            id = 'logPlugin'
+            // 实现这个插件的类的路径
+            implementationClass = 'com.atom.plugin.core.test.printf.PrintfPlugin'
+        }
+    }
 }
 
 //---------------------------publish maven-----------------------------------
@@ -75,7 +87,7 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.java
-                groupId = 'com.atom.test.asm'
+                groupId = 'com.atom.plugin'
                 artifactId = 'asm-plugin'
                 version = '1.0.0'
             }

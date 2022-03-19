@@ -50,7 +50,7 @@ class PrintfPlugin : AbstractPlugin<PrintfExtension>() {
         Log.e("${getExtensionName()} transform > ${reader.className}  ${classFile.absolutePath}")
         val node = ClassNode()
         reader.accept(node, ClassReader.EXPAND_FRAMES)
-        if(reader.className.equals("com/atom/test/annotation/MainActivity")){
+        if(reader.className.equals("com/atom/bytecode/MainActivity")){
             node.methods.forEach { methodNode ->
                 removeLogLabel(methodNode)
             }

@@ -33,7 +33,7 @@ compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 
     kotlinOptions {
-        freeCompilerArgs += "-Xuse-experimental=com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview"
+        freeCompilerArgs += "-opt-in=com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview"
         freeCompilerArgs += "-Xopt-in=kotlin.contracts.ExperimentalContracts"
     }
 }

@@ -1,8 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-}
+    id 'logPlugin'
 
+    id 'org.jetbrains.kotlin.kapt'
+    id("com.google.devtools.ksp") version "1.6.10-1.0.2"
+}
+logPlugin {
+    enableUse = true
+    enableLog = true
+    variantRun = true
+    //exclude = ["aaa", "bbb"]
+}
 android {
     compileSdk 31
 
@@ -40,4 +49,9 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+
+    implementation project(':module-annotation')
+    kapt(project(":compiler-apt"))
+    //ksp(project(":compiler-ksp"))
 }
