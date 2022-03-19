@@ -2,7 +2,6 @@ plugins {
     id 'java-library'
     id 'kotlin'
     id 'maven-publish'
-    id 'java-gradle-plugin'
 }
 
 java {
@@ -23,17 +22,6 @@ dependencies {
 
     implementation 'org.mockito:mockito-core:4.2.0'
     implementation 'junit:junit:4.13.2'
-}
-
-gradlePlugin {
-    plugins {
-        version {
-            // 在 app 模块需要通过 id 引用这个插件
-            id = 'logPlugin'
-            // 实现这个插件的类的路径
-            implementationClass = 'com.atom.plugin.core.test.printf.PrintfPlugin'
-        }
-    }
 }
 
 //---------------------------publish maven-----------------------------------

@@ -55,14 +55,18 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
 
     override fun apply(project: Project) {
         Log.init(project)
+        Log.e("${getExtensionName()} apply >> start")
         this.project = project
         val plugins: PluginContainer = project.plugins
         val hasAppPlugin: Boolean = plugins.hasPlugin(AppPlugin::class.java)
         hasAppPlugin.isTrue {
             val extensions: ExtensionContainer = project.extensions
-            this.isApp = extensions is AppExtension
+            val appExtension = extensions.getByType(AppExtension::class.java)
+            this.isApp = appExtension is AppExtension
             this.extension = extensions.create(getExtensionName(), getExtensionClass())
+            appExtension.registerTransform(this)
         }
+        Log.e("${getExtensionName()} apply >> end")
     }
 
     override fun getName(): String = getExtensionName()
