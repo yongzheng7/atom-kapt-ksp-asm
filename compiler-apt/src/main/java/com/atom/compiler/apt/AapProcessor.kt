@@ -28,9 +28,9 @@ class AapProcessor : AbstractProcessor() {
             AptContext.init(it)
             AptLog.init(it.messager, false)
         }
-        println("AapProcessor ->>>>>> init")
-        AptLog.info("AapProcessor ->>>>>> init")
-        AptLog.warning("AapProcessor ->>>>>> init")
+        println("AapProcessor ->>>>>>  1 init")
+        AptLog.info("AapProcessor ->>>>>>  2 init")
+        AptLog.warning("AapProcessor ->>>>>>  3 init")
     }
 
     override fun process(
