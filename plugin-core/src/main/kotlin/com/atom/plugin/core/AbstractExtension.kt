@@ -17,7 +17,7 @@ abstract class AbstractExtension {
 
     var enableLog: Boolean = true
 
-    var variantRun: Boolean? = null
+    var variantRun: Boolean = true
 
     var runSingle: Boolean = false
 

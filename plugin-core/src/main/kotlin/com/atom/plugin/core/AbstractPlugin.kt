@@ -89,21 +89,19 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             return
         }
         this.extension?.also { e ->
-            if (e.enableUse) {
-                Log.setEnable(e.enableLog)
-                this.executor = if (e.runSingle) {
-                    Executors.newSingleThreadExecutor()
-                } else {
-                    ForkJoinPool.commonPool()
-                }
-                try {
-                    beforeTransform(transformInvocation, e)
-                    runTransform(transformInvocation)
-                    afterTransform(transformInvocation, e)
-                } catch (e: Throwable) {
-                    Log.e("transform error" + e.localizedMessage)
-                    e.printStackTrace()
-                }
+            Log.setEnable(e.enableLog)
+            this.executor = if (e.runSingle) {
+                Executors.newSingleThreadExecutor()
+            } else {
+                ForkJoinPool.commonPool()
+            }
+            try {
+                beforeTransform(transformInvocation, e)
+                runTransform(transformInvocation)
+                afterTransform(transformInvocation, e)
+            } catch (e: Throwable) {
+                Log.e("transform error" + e.localizedMessage)
+                e.printStackTrace()
             }
         }
     }
@@ -323,7 +321,12 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
                 val inputEntryClassBytes = IOUtils.toByteArray(jarFile.getInputStream(entry))
                 if (canTransForm(name)) {
                     outputEntryClassBytes = try {
-                        transformJar(inputEntryClassBytes, entry, inputFile)
+                        val enableUse = extension?.enableUse ?: false
+                        if (enableUse) {
+                            transformJar(inputEntryClassBytes, entry, inputFile)
+                        } else {
+                            inputEntryClassBytes
+                        }
                     } catch (e: Throwable) {
                         Log.e("weaveSingleJarToFile error ${e}")
                         e.printStackTrace()
@@ -353,7 +356,12 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             FileUtils.touch(outputFile)
             // 读取输入文件为byteArray
             val inputClassBytes = FileUtils.readFileToByteArray(inputFile)
-            val outputClassBytes = transform(inputClassBytes, inputFile)
+            val enableUse = extension?.enableUse ?: false
+            val outputClassBytes = if (enableUse) {
+                transform(inputClassBytes, inputFile)
+            } else {
+                inputClassBytes
+            }
             FileUtils.writeByteArrayToFile(outputFile, outputClassBytes)
         } else {
             // 直接进行复制即可

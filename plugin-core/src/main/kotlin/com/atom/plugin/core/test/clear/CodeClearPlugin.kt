@@ -1,15 +1,13 @@
-package com.atom.plugin.core.test.printf
+package com.atom.plugin.core.test.clear
 
 import com.atom.plugin.core.AbstractPlugin
 import com.atom.plugin.core.Log
-import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.*
 import java.io.File
-import java.util.*
 import java.util.jar.JarEntry
+
 
 /**
  * All rights Reserved, Designed By www.rongdasoft.com
@@ -21,14 +19,14 @@ import java.util.jar.JarEntry
  * @Copyright: 2022/1/20 www.rongdasoft.com Inc. All rights reserved.
  */
 
-class PrintfPlugin : AbstractPlugin<PrintfExtension>() {
+class CodeClearPlugin : AbstractPlugin<CodeClearExtension>() {
 
     override fun getExtensionName(): String {
-        return "logPlugin"
+        return "codeClearPlugin"
     }
 
-    override fun getExtensionClass(): Class<PrintfExtension> {
-        return PrintfExtension::class.java
+    override fun getExtensionClass(): Class<CodeClearExtension> {
+        return CodeClearExtension::class.java
     }
 
     override fun transform(classBytes: ByteArray, classFile: File): ByteArray {
@@ -36,7 +34,7 @@ class PrintfPlugin : AbstractPlugin<PrintfExtension>() {
         Log.e("${getExtensionName()} transform > ${reader.className}  ${classFile.absolutePath}")
         val node = ClassNode()
         reader.accept(node, ClassReader.EXPAND_FRAMES)
-        if(reader.className.equals("com/atom/bytecode/MainActivity")){
+        if (reader.className.equals("com/atom/bytecode/MainActivity")) {
             node.methods.forEach { methodNode ->
                 removeLogLabel(methodNode)
             }

@@ -1,4 +1,4 @@
-package com.atom.plugin.clear
+package com.atom.plugin.core.test.clear
 
 import com.atom.plugin.core.AbstractExtension
 
