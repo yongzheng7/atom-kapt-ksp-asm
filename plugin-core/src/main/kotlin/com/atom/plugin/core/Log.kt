@@ -13,21 +13,32 @@ import org.gradle.api.logging.Logger
  * @Copyright: 2022/1/20 www.rongdasoft.com Inc. All rights reserved.
  */
 object Log {
-    var logger: Logger? = null
+    private var logger: Logger? = null
+    private var enabled: Boolean = true
     fun init(project: Project) {
         logger = project.logger
     }
 
+    fun setEnable(enabled: Boolean) {
+        this.enabled = enabled
+    }
+
     fun i(info: String?) {
-        logger?.info("> Task :ASM :logI :$info")
+        this.enabled.isTrue {
+            logger?.info("> Task :ASM :logI :$info")
+        }
     }
 
-    fun e(info: String?) {
-        logger?.error("> Task :ASM :logE :$info")
+    fun e(error: String?) {
+        this.enabled.isTrue {
+            logger?.error("> Task :ASM :logE :$error")
+        }
     }
 
-    fun w(info: String?) {
-        logger?.warn("> Task :ASM :logW :$info")
+    fun w(warn: String?) {
+        this.enabled.isTrue {
+            logger?.warn("> Task :ASM :logW :$warn")
+        }
     }
 
 }

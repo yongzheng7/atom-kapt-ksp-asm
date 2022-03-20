@@ -55,7 +55,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
 
     override fun apply(project: Project) {
         Log.init(project)
-        Log.e("${getExtensionName()} apply >> start")
+        Log.e("${getExtensionName()} apply ${Date()}")
         this.project = project
         val plugins: PluginContainer = project.plugins
         val hasAppPlugin: Boolean = plugins.hasPlugin(AppPlugin::class.java)
@@ -66,7 +66,6 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             this.extension = extensions.create(getExtensionName(), getExtensionClass())
             appExtension.registerTransform(this)
         }
-        Log.e("${getExtensionName()} apply >> end")
     }
 
     override fun getName(): String = getExtensionName()
@@ -90,18 +89,21 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             return
         }
         this.extension?.also { e ->
-            this.executor = if (e.runSingle) {
-                Executors.newSingleThreadExecutor()
-            } else {
-                ForkJoinPool.commonPool()
-            }
-            try {
-                beforeTransform(transformInvocation, e)
-                runTransform(transformInvocation)
-                afterTransform(transformInvocation, e)
-            } catch (e: Throwable) {
-                Log.e("transform error" + e.localizedMessage)
-                e.printStackTrace()
+            if (e.enableUse) {
+                Log.setEnable(e.enableLog)
+                this.executor = if (e.runSingle) {
+                    Executors.newSingleThreadExecutor()
+                } else {
+                    ForkJoinPool.commonPool()
+                }
+                try {
+                    beforeTransform(transformInvocation, e)
+                    runTransform(transformInvocation)
+                    afterTransform(transformInvocation, e)
+                } catch (e: Throwable) {
+                    Log.e("transform error" + e.localizedMessage)
+                    e.printStackTrace()
+                }
             }
         }
     }
