@@ -1,12 +1,22 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    //id 'com.atom.plugin'
+    id 'com.atom.plugin'
 
     id 'org.jetbrains.kotlin.kapt'
     id("com.google.devtools.ksp") version "1.6.10-1.0.2"
 }
+//
+//asmHook {
+//    userName 'wuyongzheng'
+//}
 
+logPlugin {
+    enableUse = true
+    enableLog = true
+    variantRun = true
+    exclude = ['aaa', 'bbb']
+}
 android {
     compileSdk 31
 

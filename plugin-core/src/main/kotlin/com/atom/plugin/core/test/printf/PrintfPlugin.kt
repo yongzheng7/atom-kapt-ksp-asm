@@ -23,20 +23,6 @@ import java.util.jar.JarEntry
 
 class PrintfPlugin : AbstractPlugin<PrintfExtension>() {
 
-    override fun apply(project: Project) {
-        super.apply(project)
-        val aware = extension?.let {
-            it as ExtensionAware
-        } ?: return
-        // 创建一个容器
-        val excludeList = project.container(List::class.java)
-        // 将容器添加为 extension
-        aware.extensions.add("exclude", excludeList)
-        project.afterEvaluate { _ ->
-            extension?.exclude?.addAll(excludeList as Collection<String>)
-        }
-    }
-
     override fun getExtensionName(): String {
         return "logPlugin"
     }

@@ -1,5 +1,7 @@
 package com.atom.plugin.core
 
+import com.atom.plugin.core.ext.printString
+
 /**
  * All rights Reserved, Designed By www.rongdasoft.com
  * @version V1.0
@@ -19,11 +21,11 @@ abstract class AbstractExtension {
 
     var runSingle: Boolean = false
 
-    var include: MutableList<String> = arrayListOf()
+    var include: Array<String>? = null
 
-    var exclude: MutableList<String> = arrayListOf()
+    var exclude: Array<String>? = null
 
     override fun toString(): String {
-        return "AbstractExtension(enableUse=$enableUse, enableLog=$enableLog, variantRun=$variantRun, runSingle=$runSingle, include=$include, exclude=$exclude)"
+        return "AbstractExtension(enableUse=$enableUse, enableLog=$enableLog, variantRun=$variantRun, runSingle=$runSingle, include=${include?.printString()}, exclude=${exclude?.printString()})"
     }
 }
