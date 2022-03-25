@@ -4,7 +4,7 @@ import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import com.atom.module.aap.annotation.AapImpl
+import com.atom.module.annotation.aap.AapImpl
 
 @AapImpl(api = Activity::class)
 class MainActivity : AppCompatActivity() {

@@ -1,4 +1,4 @@
-package com.atom.module.aap.annotation
+package com.atom.module.annotation.aap
 
 import kotlin.reflect.KClass
 

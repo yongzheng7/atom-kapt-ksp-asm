@@ -2,7 +2,7 @@ package com.atom.compiler.ksp
 
 import com.atom.compiler.ksp.common.KspContext
 import com.atom.compiler.ksp.common.KspLog
-import com.atom.module.aap.annotation.AapImpl
+import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor

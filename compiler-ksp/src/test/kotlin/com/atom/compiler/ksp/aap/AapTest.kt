@@ -5,7 +5,7 @@ import com.atom.compiler.test.core.KotlinCompilation
 import com.atom.compiler.test.core.SourceFile
 import com.atom.compiler.test.core.defaultCompilerConfig
 import com.atom.compiler.test.ksp.symbolProcessorProviders
-import com.atom.module.aap.annotation.AapImpl
+import com.atom.module.annotation.aap.AapImpl
 import org.assertj.core.api.Assertions
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.junit.Before

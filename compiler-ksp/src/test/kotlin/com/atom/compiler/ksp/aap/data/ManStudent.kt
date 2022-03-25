@@ -1,6 +1,6 @@
 package com.atom.compiler.ksp.aap.data
 
-import com.atom.module.aap.annotation.AapImpl
+import com.atom.module.annotation.aap.AapImpl
 
 /**
  * All rights Reserved, Designed By www.rongdasoft.com

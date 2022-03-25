@@ -1,7 +1,6 @@
 package com.atom.compiler.ksp.aap.data
 
-import com.atom.compiler.ksp.aap.data.Person
-import com.atom.module.aap.annotation.AapImpl
+import com.atom.module.annotation.aap.AapImpl
 import kotlin.jvm.Throws
 
 @AapImpl(Person::class, name = "Teacher" , version = 2)

@@ -2,9 +2,8 @@ package com.atom.compiler.apt
 
 import com.atom.compiler.apt.common.AptContext
 import com.atom.compiler.apt.common.AptLog
-import com.atom.module.aap.annotation.AapImpl
+import com.atom.module.annotation.aap.AapImpl
 import com.google.auto.service.AutoService
-import java.util.HashSet
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement

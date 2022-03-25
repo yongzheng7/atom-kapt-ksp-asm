@@ -1,6 +1,6 @@
 package com.atom.compiler.ksp
 
-import com.atom.module.aap.annotation.AapImplEntry
+import com.atom.module.annotation.aap.AapImplEntry
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
