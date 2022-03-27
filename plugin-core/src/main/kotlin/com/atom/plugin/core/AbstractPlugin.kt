@@ -53,11 +53,13 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
 
     abstract fun getExtensionClass(): Class<E>
 
+    // 1
     override fun apply(project: Project) {
         Log.init(project)
         Log.e("${getExtensionName()} apply ${Date()}")
         this.project = project
         val plugins: PluginContainer = project.plugins
+        // 主要是负责检查当前的plugin是否在android环境使用
         val hasAppPlugin: Boolean = plugins.hasPlugin(AppPlugin::class.java)
         hasAppPlugin.isTrue {
             val extensions: ExtensionContainer = project.extensions
@@ -65,7 +67,15 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             this.isApp = appExtension is AppExtension
             this.extension = extensions.create(getExtensionName(), getExtensionClass())
             appExtension.registerTransform(this)
+            project.afterEvaluate { p ->
+                afterEvaluate(p)
+            }
         }
+    }
+
+    // 2
+    open fun afterEvaluate(project: Project) {
+        Log.e("afterEvaluate ${getExtensionName()} java version = ${System.getProperty("java.version")}")
     }
 
     override fun getName(): String = getExtensionName()
@@ -83,8 +93,10 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
 
     override fun isIncremental(): Boolean = true
 
+    // 3
     override fun transform(transformInvocation: TransformInvocation?) {
         super.transform(transformInvocation)
+        Log.e("${getExtensionName()} transform ${transformInvocation.toString()}")
         if (transformInvocation == null) {
             return
         }

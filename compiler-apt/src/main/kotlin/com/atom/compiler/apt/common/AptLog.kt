@@ -2,7 +2,6 @@ package com.atom.compiler.apt.common
 
 import java.lang.StringBuilder
 import javax.annotation.processing.Messager
-import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.tools.Diagnostic
 
@@ -20,8 +19,8 @@ object AptLog {
     var debug = false
 
     fun init(msg: Messager, isDebug: Boolean) {
-        this.msg = msg
-        this.debug = isDebug
+        AptLog.msg = msg
+        debug = isDebug
     }
 
     fun info(info: String) {

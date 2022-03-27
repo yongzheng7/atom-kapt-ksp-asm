@@ -1,5 +1,6 @@
 package com.atom.compiler.test.core
 
+import com.atom.compiler.test.core.ext.replaceAll
 import okio.buffer
 import okio.sink
 import org.intellij.lang.annotations.Language
@@ -15,7 +16,11 @@ abstract class SourceFile {
         /**
          * Create a new Java source file for the compilation when the compilation is run
          */
-        fun java(name: String, @Language("java") contents: String, trimIndent: Boolean = true): SourceFile {
+        fun java(
+            name: String,
+            @Language("java") contents: String,
+            trimIndent: Boolean = true
+        ): SourceFile {
             require(File(name).hasJavaFileExtension())
             val finalContents = if (trimIndent) contents.trimIndent() else contents
             return new(name, finalContents)
@@ -24,7 +29,11 @@ abstract class SourceFile {
         /**
          * Create a new Kotlin source file for the compilation when the compilation is run
          */
-        fun kotlin(name: String, @Language("kotlin") contents: String, trimIndent: Boolean = true): SourceFile {
+        fun kotlin(
+            name: String,
+            @Language("kotlin") contents: String,
+            trimIndent: Boolean = true
+        ): SourceFile {
             require(File(name).hasKotlinFileExtension())
             val finalContents = if (trimIndent) contents.trimIndent() else contents
             return new(name, finalContents)
@@ -55,6 +64,25 @@ abstract class SourceFile {
             }
 
             override fun writeIfNeeded(dir: File): File = path
+        }
+
+        fun getClassFilePath(clazz: Class<*>): String {
+            return getClassFile(clazz).absolutePath
+        }
+
+        fun getClassFile(clazz: Class<*>): File {
+            val dir = clazz.protectionDomain.codeSource.location.file
+            val name = clazz.simpleName + ".class"
+            return File(dir + clazz.`package`.name.replaceAll("[.]", "/") + "/", name)
+        }
+
+        fun loadSourceFile(path: String): List<SourceFile> {
+            val root = File(path)
+            if (!root.exists()) return emptyList()
+            val listFiles = root.listFiles() ?: return emptyList()
+            return listFiles.map {
+                fromPath(it)
+            }
         }
     }
 }

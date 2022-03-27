@@ -2,6 +2,9 @@ package com.atom.plugin.core.test.clear
 
 import com.atom.plugin.core.AbstractPlugin
 import com.atom.plugin.core.Log
+import org.gradle.api.Project
+import org.gradle.api.artifacts.result.DependencyResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.*

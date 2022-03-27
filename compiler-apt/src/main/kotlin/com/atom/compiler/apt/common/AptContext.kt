@@ -22,9 +22,9 @@ object AptContext {
     lateinit var filer: Filer
 
     fun init(env: ProcessingEnvironment) {
-        this.elements = env.elementUtils
-        this.types = env.typeUtils
-        this.messager = env.messager
-        this.filer = env.filer
+        elements = env.elementUtils
+        types = env.typeUtils
+        messager = env.messager
+        filer = env.filer
     }
 }

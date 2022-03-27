@@ -148,9 +148,11 @@ class AapTest {
                 }
             })
             inheritClassPath = true
+            scriptResolverEnvironment.putAll(hashMapOf<String , String>().apply {
+                this["debug"] = "debug scriptResolverEnvironment"
+            })
         }.compile()
 
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
     }
-
 }
