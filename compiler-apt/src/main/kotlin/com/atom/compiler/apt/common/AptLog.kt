@@ -25,21 +25,20 @@ object AptLog {
 
     fun info(info: String) {
         if (info.isNotEmpty() && debug) {
-            msg!!.printMessage(
-                Diagnostic.Kind.NOTE, """
-     $info
-     
-     """.trimIndent()
+            msg?.printMessage(
+                Diagnostic.Kind.NOTE, "[AptLog] $info"
             )
+            println("[AptLog] $info")
         }
     }
 
     fun error(error: String) {
         if (error.isNotEmpty() && debug) {
-            msg!!.printMessage(
+            msg?.printMessage(
                 Diagnostic.Kind.ERROR,
-                "An exception is encountered, [$error]\n"
+                "[AptLog] An exception is encountered, [$error]\n"
             )
+            println("[AptLog] An exception is encountered, [$error]\n")
         }
     }
 
@@ -47,8 +46,9 @@ object AptLog {
         if (error.isNotEmpty() && var3 != null && debug) {
             msg?.printMessage(
                 Diagnostic.Kind.ERROR,
-                "An exception is encountered, [$error]\n", var3
+                "[AptLog] An exception is encountered, [$error]\n", var3
             )
+            println("[AptLog] An exception is encountered, [$error]\n")
         }
     }
 
@@ -56,17 +56,20 @@ object AptLog {
         if (null != error && debug) {
             msg?.printMessage(
                 Diagnostic.Kind.ERROR,
-                """
-                An exception is encountered, [${error.message}]
+                """[AptLog] An exception is encountered, [${error.message}]
                 ${formatStackTrace(error.stackTrace)}
                 """.trimIndent()
             )
+            println("""[AptLog] An exception is encountered, [${error.message}]
+                ${formatStackTrace(error.stackTrace)}
+                """.trimIndent())
         }
     }
 
     fun warning(warning: CharSequence?) {
         if (!warning.isNullOrEmpty() && debug) {
-            msg?.printMessage(Diagnostic.Kind.WARNING, warning)
+            msg?.printMessage(Diagnostic.Kind.WARNING, "[AptLog] $warning")
+            println("[AptLog] $warning")
         }
     }
 

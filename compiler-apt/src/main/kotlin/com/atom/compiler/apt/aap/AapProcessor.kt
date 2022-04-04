@@ -12,7 +12,7 @@ import javax.lang.model.element.TypeElement
 class AapProcessor : BaseProcessor() {
     lateinit var aapContext : AapContext
     override fun initOptions(context: AptContext, options: Map<String, String>) {
-        AptLog.info("AapProcessor ${options}")
+        AptLog.info("AapProcessor initOptions $options")
         aapContext = AapContext(context, options)
     }
 
@@ -20,7 +20,7 @@ class AapProcessor : BaseProcessor() {
         annotations: MutableSet<out TypeElement>?,
         roundEnv: RoundEnvironment?
     ): Boolean {
-        AptLog.info("********************************process**************************************")
+        AptLog.info("process start")
         if (annotations.isNullOrEmpty()) {
             return false
         }
@@ -31,17 +31,14 @@ class AapProcessor : BaseProcessor() {
         for (element in roundEnv.getElementsAnnotatedWith(AapImpl::class.java)) {
             AptLog.info("getElementsAnnotatedWith  $element")
         }
-        
 
         //将所有的类进行打包创建一个新的类进行容纳
-        AptLog.info("********************************end**************************************")
+        AptLog.info("process end")
         return false
     }
 
     override fun getSupportedAnnotationTypes(): Set<String?> {
-        return mutableSetOf<String>().apply {
-            this.add(AapImpl::class.java.canonicalName)
-        }
+        return setOf(AapImpl::class.java.canonicalName)
     }
 
     override fun getSupportedOptions(): Set<String> {

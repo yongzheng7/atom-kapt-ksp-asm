@@ -21,9 +21,7 @@ abstract class BaseProcessor : AbstractProcessor() {
         processingEnv?.also {
             AptContext.init(it)
             AptLog.init(it.messager, true)
-            if (it.options.isNotEmpty()) {
-                initOptions(AptContext, it.options)
-            }
+            initOptions(AptContext, it.options)
         }
     }
 

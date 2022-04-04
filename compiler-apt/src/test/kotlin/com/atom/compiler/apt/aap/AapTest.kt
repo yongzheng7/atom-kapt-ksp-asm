@@ -1,6 +1,7 @@
 package com.atom.compiler.apt.aap
 
 import com.atom.compiler.apt.aap.data.Teacher
+import com.atom.compiler.apt.common.AptLog
 import com.atom.compiler.test.core.*
 import com.atom.compiler.test.core.SourceFile.Companion.loadSourceFile
 import com.atom.compiler.test.ksp.symbolProcessorProviders
@@ -58,7 +59,9 @@ class AapTest {
     fun `test simple add annotations`() {
         val annotationProcessor = object : AbstractProcessor() {
             override fun getSupportedAnnotationTypes(): Set<String> =
-                setOf(AapImpl::class.java.canonicalName)
+                setOf(AapImpl::class.java.canonicalName).also {
+                    println("getSupportedAnnotationTypes 1 ${AapImpl::class.java.canonicalName}")
+                }
 
             override fun process(p0: MutableSet<out TypeElement>?, p1: RoundEnvironment?): Boolean {
                 println("annotationProcessor process")
@@ -70,10 +73,7 @@ class AapTest {
         }
         val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
         val result = defaultCompilerConfig().apply {
-            sources = listOf(
-                SourceFile.fromPath(aapImplPath),
-                SourceFile.fromPath(File("D:\\app_git_android\\demo_asm\\test-plugin-compiler\\compiler-apt\\src\\test\\kotlin\\com\\atom\\compiler\\apt\\aap\\data\\Teacher.kt"))
-            )
+            sources = getSourceFiles()
             annotationProcessors = listOf(annotationProcessor)
             compilerPlugins = listOf(mockPlugin)
             inheritClassPath = true
@@ -114,13 +114,16 @@ class AapTest {
     }
     @Test
     fun `test AapProcessor`() {
+        val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
         val result = defaultCompilerConfig().apply {
             sources = getSourceFiles()
             annotationProcessors = listOf(AapProcessor())
             inheritClassPath = true
             kaptArgs.putAll(hashMapOf<OptionName, OptionValue>().apply {
-                this.put("debug" , "debug kaptArgs")
+                this.put("debug" , "true")
+                this.put("bundleClassname" , "app")
             })
+            compilerPlugins = listOf(mockPlugin)
         }.compile()
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
     }
