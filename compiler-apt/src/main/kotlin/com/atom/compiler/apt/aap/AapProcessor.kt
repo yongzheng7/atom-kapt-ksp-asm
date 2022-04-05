@@ -20,7 +20,7 @@ class AapProcessor : BaseProcessor() {
         annotations: MutableSet<out TypeElement>?,
         roundEnv: RoundEnvironment?
     ): Boolean {
-        AptLog.info("process start")
+        AptLog.info("process start******************************************")
         if (annotations.isNullOrEmpty()) {
             return false
         }
@@ -29,11 +29,15 @@ class AapProcessor : BaseProcessor() {
         }
         //遍历所有的class类,筛选出指定索引标注的类
         for (element in roundEnv.getElementsAnnotatedWith(AapImpl::class.java)) {
-            AptLog.info("getElementsAnnotatedWith  $element")
+            try {
+                val create = AapMeta.create(aapContext, element)
+                AptLog.info("process AapMeta.create=$create")
+            }catch (e : Exception){
+                AptLog.info("process find exception=$e ")
+            }
         }
-
         //将所有的类进行打包创建一个新的类进行容纳
-        AptLog.info("process end")
+        AptLog.info("process end******************************************")
         return false
     }
 

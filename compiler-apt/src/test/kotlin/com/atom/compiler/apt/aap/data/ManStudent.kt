@@ -11,8 +11,8 @@ import com.atom.module.annotation.aap.AapImpl
  * @date: 2022/3/7
  * @Copyright: 2022/3/7 www.rongdasoft.com Inc. All rights reserved.
  */
-@AapImpl(Person::class, name = "ManStudent" , version = 3)
-class ManStudent() : Person {
+@AapImpl(api = "com.atom.compiler.apt.aap.data.Person", name = "ManStudent", version = 3)
+class ManStudent() : AbstractStudent(), Person , Man {
 
     constructor(name: String) : this()
 

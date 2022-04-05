@@ -5,11 +5,11 @@ import com.atom.compiler.apt.common.AptLog
 import com.atom.compiler.apt.ext.upperFirstLetter
 import java.lang.RuntimeException
 
-class AapContext(val context: AptContext, val options: Map<String, String>) {
+class AapContext(val context: AptContext, options: Map<String, String>) {
 
     val moduleName: String
     val isDebug: Boolean
-    val aapClass = HashSet<String>()
+    val classSet = HashSet<String>()
 
     init {
         // option debug
