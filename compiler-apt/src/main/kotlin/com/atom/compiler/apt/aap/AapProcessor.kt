@@ -28,14 +28,17 @@ class AapProcessor : BaseProcessor() {
             return false
         }
         //遍历所有的class类,筛选出指定索引标注的类
+        val apiImpls: HashSet<AapMeta> = HashSet()
         for (element in roundEnv.getElementsAnnotatedWith(AapImpl::class.java)) {
             try {
-                val create = AapMeta.create(aapContext, element)
-                AptLog.info("process AapMeta.create=$create")
+                apiImpls.add(AapMeta.create(aapContext, element).also {
+                    AptLog.info("process AapMeta.create=$it")
+                })
             }catch (e : Exception){
                 AptLog.info("process find exception=$e ")
             }
         }
+        AapMetas(aapContext , )
         //将所有的类进行打包创建一个新的类进行容纳
         AptLog.info("process end******************************************")
         return false

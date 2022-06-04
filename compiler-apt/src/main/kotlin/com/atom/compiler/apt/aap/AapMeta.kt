@@ -15,16 +15,16 @@ class AapMeta {
     companion object {
         fun create(aapContext: AapContext, element: Element): AapMeta {
             if (element !is TypeElement) {
-                throw AapException("element !is TypeElement")
+                throw AapException("${element.simpleName} !is TypeElement")
             }
             if (!element.isPublic()) {
-                throw AapException("element is not Public")
+                throw AapException("${element.qualifiedName} is not Public")
             }
             if (element.isAbstract()) {
-                throw AapException("element is Abstract")
+                throw AapException("${element.qualifiedName} is Abstract")
             }
             if (!element.hasPublicEmptyDefaultConstructor()) {
-                throw AapException("element has not PublicEmptyDefaultConstructor")
+                throw AapException("${element.qualifiedName} has not PublicEmptyDefaultConstructor")
             }
             val result = AapMeta(aapContext, element)
             if (Object::class.qualifiedName.equals(result.apiQualifiedName)) {
