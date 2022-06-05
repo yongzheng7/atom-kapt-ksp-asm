@@ -3,8 +3,8 @@ package com.atom.compiler.apt.aap.data
 import com.atom.module.annotation.aap.AapImpl
 import kotlin.jvm.Throws
 
-@AapImpl(api = "com.atom.compiler.apt.aap.data.Person", name = "Teacher" , version = 2)
-class Teacher : Person {
+@AapImpl(api = "com.atom.compiler.apt.aap.data.Man", name = "Teacher", version = 2)
+class Teacher : Person, Man {
 
     constructor()
 

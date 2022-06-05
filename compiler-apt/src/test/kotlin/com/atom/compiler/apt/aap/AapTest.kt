@@ -1,6 +1,7 @@
 package com.atom.compiler.apt.aap
 
 import com.atom.compiler.apt.aap.data.Teacher
+import com.atom.compiler.apt.common.AptContext
 import com.atom.compiler.apt.common.AptLog
 import com.atom.compiler.test.core.*
 import com.atom.compiler.test.core.SourceFile.Companion.loadSourceFile
@@ -13,6 +14,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import java.io.File
 import javax.annotation.processing.AbstractProcessor
+import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.TypeElement
 
@@ -26,6 +28,11 @@ class AapTest {
                 rootPath,
                 "module-annotation\\src\\main\\java\\com\\atom\\module\\annotation\\aap\\AapImpl.kt"
             )
+        }
+
+    val savePath: String
+        get() {
+            return rootPath + "compiler-apt\\src\\test\\kotlin\\com\\atom\\compiler\\apt\\aap\\result"
         }
 
     @Before
@@ -112,6 +119,7 @@ class AapTest {
         }.compile()
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
     }
+
     @Test
     fun `test AapProcessor`() {
         val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
@@ -120,11 +128,64 @@ class AapTest {
             annotationProcessors = listOf(AapProcessor())
             inheritClassPath = true
             kaptArgs.putAll(hashMapOf<OptionName, OptionValue>().apply {
-                this.put("debug" , "true")
-                this.put("bundleClassname" , "app")
+                this.put("debug", "true")
+                this.put("bundleClassname", "app")
             })
             compilerPlugins = listOf(mockPlugin)
         }.compile()
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    }
+
+
+    @Test
+    fun `测试注解处理器,进行收集实现某些接口的类`() {
+        val annotationProcessor = object : AbstractProcessor() {
+            lateinit var aapContext: AapContext
+            override fun init(processingEnv: ProcessingEnvironment?) {
+                super.init(processingEnv)
+                processingEnv?.also {
+                    AptContext.init(it)
+                    AptLog.init(it.messager, true)
+                    aapContext = AapContext(AptContext, it.options)
+                }
+            }
+
+            override fun getSupportedAnnotationTypes(): Set<String> =
+                setOf(AapImpl::class.java.canonicalName).also {
+                    println("getSupportedAnnotationTypes 1 ${AapImpl::class.java.canonicalName}")
+                }
+
+            override fun process(p0: MutableSet<out TypeElement>?, p1: RoundEnvironment?): Boolean {
+                println("annotationProcessor process")
+                //遍历所有的class类,筛选出指定索引标注的类
+                val apiImpls: HashSet<AapMeta> = HashSet()
+                p1?.getElementsAnnotatedWith(AapImpl::class.java)?.forEach {
+                    try {
+                        apiImpls.add(AapMeta.create(aapContext, it))
+                    } catch (e: Exception) {
+                        AptLog.error("process find exception=$e ")
+                    }
+                }
+                AptLog.info("process assemble finish \n $apiImpls")
+                AptLog.info("process assemble final class start  \n $aapContext")
+                val aapMetas = AapMetas(aapContext)
+                val createFile = aapMetas.createFile(apiImpls)
+                aapMetas.writeFile(createFile)
+                AptLog.info("process assemble final class end  \n $aapContext")
+                return false
+            }
+        }
+        val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
+        val result = defaultCompilerConfig().apply {
+            sources = getSourceFiles()
+            annotationProcessors = listOf(annotationProcessor)
+            compilerPlugins = listOf(mockPlugin)
+            inheritClassPath = true
+            kaptArgs.putAll(hashMapOf<OptionName, OptionValue>().apply {
+                this.put(AapOptions.DEBUG_OPTION, "true")
+                this.put(AapOptions.BUNDLE_OPTION, "app")
+            })
+        }.compile()
+        println(result)
     }
 }

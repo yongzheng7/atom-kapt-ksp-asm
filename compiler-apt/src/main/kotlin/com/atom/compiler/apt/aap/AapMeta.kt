@@ -1,5 +1,6 @@
 package com.atom.compiler.apt.aap
 
+import com.atom.compiler.apt.common.AptLog
 import com.atom.compiler.apt.ext.hasPublicEmptyDefaultConstructor
 import com.atom.compiler.apt.ext.isAbstract
 import com.atom.compiler.apt.ext.isPublic
@@ -53,7 +54,7 @@ class AapMeta {
 
     val annotationApi: String
     val annotationName: String
-    val annotationVersion: Int
+    val annotationVersion: Long
 
     val superTypeMap = mutableMapOf<String, TypeElement>()
     val interfaceTypeMap = mutableMapOf<String, TypeElement>()
@@ -73,18 +74,19 @@ class AapMeta {
         this.annotationApi = annotation.api
         this.annotationName = annotation.name
         this.annotationVersion = annotation.version
-
-        addInterface(element)
-        addSuper(element)
-
-        if (!(superTypeMap.keys.contains(this.apiQualifiedName)
-                    || interfaceTypeMap.keys.contains(this.apiQualifiedName))
-        ) {
-            throw AapException("curr class not extend and interface annotation api")
-        }
+        // TODO 找到接口
+        //addInterface(element)
+        // TODO 父类
+        //addSuper(element)
+        // TODO 进行检查是否继承和实现 注解中api的
+//        if (!(superTypeMap.keys.contains(this.apiQualifiedName)
+//                    || interfaceTypeMap.keys.contains(this.apiQualifiedName))
+//        ) {
+//            throw AapException("[${element}] not extend and interface annotation api")
+//        }
     }
 
-    fun addSuper(element: TypeElement) {
+    private fun addSuper(element: TypeElement) {
         element.superclass.run {
             if (this is DeclaredType) {
                 val superClassTypeElement: TypeElement = this.asElement() as TypeElement
@@ -94,7 +96,7 @@ class AapMeta {
         }
     }
 
-    fun addInterface(element: TypeElement) {
+    private fun addInterface(element: TypeElement) {
         for (interfaceEntry in element.interfaces) {
             //  检查 实现或者继承的接口和父类 是否和api能够对应
             if (interfaceEntry is DeclaredType) {
@@ -111,12 +113,25 @@ class AapMeta {
     }
 
     override fun toString(): String {
-        return " aapContext=$aapContext, \n" +
-                " implTypeElement=$implTypeElement, implQualifiedName='$implQualifiedName', \n" +
-                " apiTypeElement=$apiTypeElement, apiQualifiedName='$apiQualifiedName',\n" +
-                " annotationApi='$annotationApi', annotationName='$annotationName', annotationVersion=$annotationVersion, \n" +
-                " superTypeMap=$superTypeMap, \n" +
-                " interfaceTypeMap=$interfaceTypeMap"
+        return """
+            
+            ----------------------------------------------------------------------------------------
+            ${this.implTypeElement.simpleName}
+            ---> 
+            aapContext=            $aapContext
+            --->
+            implTypeElement = $implTypeElement , implQualifiedName = $implQualifiedName 
+            apiTypeElement  = $apiTypeElement , apiQualifiedName = $apiQualifiedName
+            --->
+            annotationApi = $annotationApi
+            annotationName = $annotationName
+            annotationVersion = $annotationVersion
+            --->
+            superTypeMap = $superTypeMap
+            --->
+            interfaceTypeMap = $interfaceTypeMap
+            ----------------------------------------------------------------------------------------
+        """.trimIndent()
     }
 
 }

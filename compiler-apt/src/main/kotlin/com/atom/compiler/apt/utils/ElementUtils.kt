@@ -139,7 +139,7 @@ object ElementUtils {
         return false
     }
 
-    fun isAssignableInterfaceClass(
+    private fun isAssignableInterfaceClass(
         context: AptContext,
         classElement: TypeElement,
         interfaceClassTypeMirror: TypeMirror
@@ -150,7 +150,6 @@ object ElementUtils {
         }
         while (true) {
             val interfaces = currElement.interfaces
-            AptLog.info("The class ${currElement.qualifiedName}")
             if (interfaces.contains(interfaceClassTypeMirror)) {
                 return true
             }
@@ -172,16 +171,14 @@ object ElementUtils {
         }
     }
 
-    fun isAssignableSuperClass(
+    private fun isAssignableSuperClass(
         context: AptContext,
         classElement: TypeElement,
         superClassElement: TypeMirror
     ): Boolean {
         var currentClass = classElement
-        AptLog.info("The class ${classElement.qualifiedName}")
         while (true) {
             val superClassType = currentClass.superclass
-            AptLog.info("\n The class $superClassType")
             if (superClassType.kind == TypeKind.NONE) {
                 return false
             }
@@ -199,7 +196,6 @@ object ElementUtils {
     ): Boolean {
         val currClassQualifiedName = classElement.qualifiedName.toString()
         val superClassQualifiedName = superClassElement.qualifiedName.toString()
-        AptLog.info("\n isAssignable curr = $currClassQualifiedName   super = $superClassQualifiedName")
         if (currClassQualifiedName == superClassQualifiedName) {
             return true
         }

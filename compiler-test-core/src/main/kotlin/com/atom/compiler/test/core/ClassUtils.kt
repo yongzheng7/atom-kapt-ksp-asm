@@ -12,7 +12,7 @@ import java.util.regex.Pattern
  * @date: 2022/2/24
  * @Copyright: 2022/2/24 www.rongdasoft.com Inc. All rights reserved.
  */
-object ClassUtils {
+internal object ClassUtils {
 
     fun getClassFilePath(clazz: Class<*>): String {
         return getClassFile(clazz).absolutePath

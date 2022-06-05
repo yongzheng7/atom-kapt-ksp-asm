@@ -38,7 +38,9 @@ class AapProcessor : BaseProcessor() {
                 AptLog.info("process find exception=$e ")
             }
         }
-        AapMetas(aapContext , )
+        val aapMetas = AapMetas(aapContext)
+        val createFile = aapMetas.createFile(apiImpls)
+        aapMetas.writeFile(createFile)
         //将所有的类进行打包创建一个新的类进行容纳
         AptLog.info("process end******************************************")
         return false
