@@ -1,4 +1,4 @@
-package com.atom.compiler.ksp
+package com.atom.compiler.ksp.aap
 
 import com.atom.compiler.ksp.common.KspContext
 import com.atom.compiler.ksp.common.KspLog

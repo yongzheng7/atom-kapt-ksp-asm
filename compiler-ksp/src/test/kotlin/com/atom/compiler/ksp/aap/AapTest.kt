@@ -1,11 +1,20 @@
 package com.atom.compiler.ksp.aap
 
-import com.atom.compiler.ksp.AapSymbolProcessorProvider
+import com.atom.compiler.ksp.common.KspContext
+import com.atom.compiler.ksp.common.KspLog
 import com.atom.compiler.test.core.KotlinCompilation
 import com.atom.compiler.test.core.SourceFile
 import com.atom.compiler.test.core.defaultCompilerConfig
 import com.atom.compiler.test.ksp.symbolProcessorProviders
-import com.atom.module.annotation.aap.AapImpl
+import com.atom.module.annotation.aap.AapKspImpl
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.impl.kotlin.KSTypeImpl
+import com.squareup.kotlinpoet.ksp.toClassName
 import org.assertj.core.api.Assertions
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.junit.Before
@@ -20,13 +29,40 @@ class AapTest {
 
     lateinit var rootPath: String
 
+    val annotationPath: File
+        get() {
+            return File(
+                rootPath,
+                "module-annotation\\src\\main\\java\\com\\atom\\module\\annotation\\aap\\AapKspImpl.kt"
+            )
+        }
+
+    val savePath: String
+        get() {
+            return rootPath + "compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\apt\\aap\\result"
+        }
+
+    val sourcePath: String
+        get() {
+            return rootPath + "compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\ksp\\aap\\data"
+        }
+
     @Before
     fun before() {
-        rootPath = "D:\\app_git_android\\demo_asm\\test-plugin-compiler"
+        rootPath = "D:\\app_git_android\\demo_asm\\test-plugin-compiler\\"
+    }
+
+    fun getSourceFiles(): List<SourceFile> {
+        val loadSourceFile =
+            SourceFile.loadSourceFile(sourcePath)
+        val sourceFiles = mutableListOf<SourceFile>()
+        sourceFiles.add(SourceFile.fromPath(annotationPath))
+        sourceFiles.addAll(loadSourceFile)
+        return sourceFiles
     }
 
     @Test
-    fun test() {
+    fun ` 检查进行测试验证`() {
         println("test 1")
         val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
         println(mockPlugin)
@@ -36,39 +72,21 @@ class AapTest {
 
 
     @Test
-    fun `test simple add annotations`() {
+    fun `测试进行遍历添加AapKspImpl的注解的类`() {
         val annotationProcessor = object : AbstractProcessor() {
             override fun getSupportedAnnotationTypes(): Set<String> =
-                setOf(AapImpl::class.java.canonicalName)
+                setOf(AapKspImpl::class.java.canonicalName)
 
             override fun process(p0: MutableSet<out TypeElement>?, p1: RoundEnvironment?): Boolean {
-                p1?.getElementsAnnotatedWith(AapImpl::class.java)?.forEach {
-                    println("annotationProcessor ${it?.simpleName.toString()}")
+                p1?.getElementsAnnotatedWith(AapKspImpl::class.java)?.forEach {
+                    println("annotationProcessor ${it.javaClass} ${it is KSClassDeclaration}  ${it.modifiers} ${it?.simpleName.toString()}")
                 }
                 return false
             }
         }
         val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
-        val classAapImpl =
-            SourceFile.fromPath(
-                File(
-                    rootPath,
-                    "\\aap-annotation\\src\\main\\java\\com\\atom\\module\\aap\\annotation\\AapImpl.kt"
-                )
-            )
-        val loadSourceFile =
-            loadSourceFile(
-                File(
-                    rootPath,
-                    "\\compiler\\compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\ksp\\aap\\data"
-                ).absolutePath
-            )
-        val sourceFiles = mutableListOf<SourceFile>()
-        sourceFiles.add(classAapImpl)
-        sourceFiles.addAll(loadSourceFile)
-
         val result = defaultCompilerConfig().apply {
-            sources = sourceFiles
+            sources = getSourceFiles()
             annotationProcessors = listOf(annotationProcessor)
             compilerPlugins = listOf(mockPlugin)
             inheritClassPath = true
@@ -76,83 +94,39 @@ class AapTest {
         println(result)
     }
 
-    fun loadSourceFile(path: String): List<SourceFile> {
-        val root = File(path)
-        if (!root.exists()) return emptyList()
-        val listFiles = root.listFiles() ?: return emptyList()
-        return listFiles.map {
-            SourceFile.fromPath(it)
-        }
-    }
-
     @Test
     fun test_aap() {
-        // 一定需要注解
-        val classAapImpl =
-            SourceFile.fromPath(
-                File(
-                    rootPath,
-                    "\\module-annotation\\src\\main\\java\\com\\atom\\module\\annotation\\aap\\AapImpl.kt"
-                )
-            )
-        val loadSourceFile =
-            loadSourceFile(
-                File(
-                    rootPath,
-                    "\\compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\ksp\\aap\\data"
-                ).absolutePath
-            )
-        val sourceFiles = mutableListOf<SourceFile>()
-        sourceFiles.add(classAapImpl)
-        sourceFiles.addAll(loadSourceFile)
         val result = KotlinCompilation().apply {
-            sources = sourceFiles
-            symbolProcessorProviders = listOf(AapSymbolProcessorProvider())
-        }.compile()
-
-        Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-    }
-
-    @Test
-    fun test_aap2() {
-        val classAapImpl =
-            SourceFile.fromPath(File("D:\\project\\testkaptksp\\aap-annotation\\src\\main\\java\\com\\atom\\module\\aap\\annotation\\AapImpl.kt"))
-        val loadSourceFile =
-            loadSourceFile("D:\\project\\testkaptksp\\test-kapt-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\aap\\data")
-        val sourceFiles = mutableListOf<SourceFile>()
-        sourceFiles.add(classAapImpl)
-        sourceFiles.addAll(loadSourceFile)
-
-        val result = defaultCompilerConfig().apply {
-            sources = sourceFiles
-            annotationProcessors = listOf(object : AbstractProcessor() {
-                override fun getSupportedAnnotationTypes(): MutableSet<String> {
-                    return mutableSetOf<String>().apply {
-                        this.add(AapImpl::class.java.canonicalName)
+            sources = getSourceFiles()
+            symbolProcessorProviders = listOf(object : SymbolProcessorProvider {
+                override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+                    return object : SymbolProcessor {
+                        override fun process(resolver: Resolver): List<KSAnnotated> {
+                            KspContext.init(environment, resolver)
+                            KspLog.init(environment.logger, true)
+                            KspLog.info("DeepCopySymbolProcessor, ${KotlinVersion.CURRENT}")
+                            resolver.getSymbolsWithAnnotation(AapKspImpl::class.qualifiedName!!)
+                                .filterIsInstance<KSClassDeclaration>()
+                                .forEach {
+                                    KspLog.info("1 ${it.qualifiedName?.getShortName()} ")
+                                    it.annotations.forEach {
+                                        KspLog.info("2 ${it.arguments} ")
+                                        it.arguments.forEach {
+                                            if(it.value is KSTypeImpl){
+                                                KspLog.info("3 ${it.name?.getShortName()}, ${it.value.toString()} ," +
+                                                        " ${(it.value as KSTypeImpl).toClassName()} ")
+                                            }else{
+                                                KspLog.info("3 ${it.name?.getShortName()}, ${it.value.toString()}")
+                                            }
+                                        }
+                                    }
+                                }
+                            return emptyList()
+                        }
                     }
                 }
-
-                override fun process(
-                    annotations: MutableSet<out TypeElement>?,
-                    roundEnv: RoundEnvironment?
-                ): Boolean {
-                    if (roundEnv?.processingOver() == true || annotations?.size == 0) {
-                        return false
-                    }
-                    roundEnv?.getElementsAnnotatedWith(
-                        AapImpl::class.java
-                    )?.onEach {
-                        println("test_aap2  $it")
-                    }
-                    return false
-                }
-            })
-            inheritClassPath = true
-            scriptResolverEnvironment.putAll(hashMapOf<String , String>().apply {
-                this["debug"] = "debug scriptResolverEnvironment"
             })
         }.compile()
-
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
     }
 }

@@ -1,4 +1,4 @@
-package com.atom.compiler.ksp
+package com.atom.compiler.ksp.aap
 
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment

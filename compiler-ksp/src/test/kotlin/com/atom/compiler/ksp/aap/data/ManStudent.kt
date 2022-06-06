@@ -1,6 +1,6 @@
 package com.atom.compiler.ksp.aap.data
 
-import com.atom.module.annotation.aap.AapImpl
+import com.atom.module.annotation.aap.AapKspImpl
 
 /**
  * All rights Reserved, Designed By www.rongdasoft.com
@@ -11,7 +11,7 @@ import com.atom.module.annotation.aap.AapImpl
  * @date: 2022/3/7
  * @Copyright: 2022/3/7 www.rongdasoft.com Inc. All rights reserved.
  */
-@AapImpl(Person::class, name = "ManStudent" , version = 3)
+@AapKspImpl(Person::class, name = "ManStudent" , version = 3)
 class ManStudent() : Person {
 
     constructor(name: String) : this()
