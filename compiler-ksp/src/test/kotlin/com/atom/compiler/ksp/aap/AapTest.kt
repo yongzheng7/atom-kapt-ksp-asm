@@ -2,9 +2,8 @@ package com.atom.compiler.ksp.aap
 
 import com.atom.compiler.ksp.common.KspContext
 import com.atom.compiler.ksp.common.KspLog
-import com.atom.compiler.test.core.KotlinCompilation
-import com.atom.compiler.test.core.SourceFile
-import com.atom.compiler.test.core.defaultCompilerConfig
+import com.atom.compiler.test.core.*
+import com.atom.compiler.test.ksp.kspArgs
 import com.atom.compiler.test.ksp.symbolProcessorProviders
 import com.atom.module.annotation.aap.AapKspImpl
 import com.google.devtools.ksp.processing.Resolver
@@ -13,17 +12,12 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.impl.kotlin.KSTypeImpl
-import com.squareup.kotlinpoet.ksp.toClassName
 import org.assertj.core.api.Assertions
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import java.io.File
-import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.RoundEnvironment
-import javax.lang.model.element.TypeElement
 
 class AapTest {
 
@@ -70,61 +64,42 @@ class AapTest {
         println("test 2")
     }
 
-
     @Test
-    fun `测试进行遍历添加AapKspImpl的注解的类`() {
-        val annotationProcessor = object : AbstractProcessor() {
-            override fun getSupportedAnnotationTypes(): Set<String> =
-                setOf(AapKspImpl::class.java.canonicalName)
-
-            override fun process(p0: MutableSet<out TypeElement>?, p1: RoundEnvironment?): Boolean {
-                p1?.getElementsAnnotatedWith(AapKspImpl::class.java)?.forEach {
-                    println("annotationProcessor ${it.javaClass} ${it is KSClassDeclaration}  ${it.modifiers} ${it?.simpleName.toString()}")
-                }
-                return false
-            }
-        }
+    fun `测试进行遍历添加AapKspImpl的注解的类 2`() {
         val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
-        val result = defaultCompilerConfig().apply {
-            sources = getSourceFiles()
-            annotationProcessors = listOf(annotationProcessor)
-            compilerPlugins = listOf(mockPlugin)
-            inheritClassPath = true
-        }.compile()
-        println(result)
-    }
-
-    @Test
-    fun test_aap() {
         val result = KotlinCompilation().apply {
+            compilerPlugins = listOf(mockPlugin)
             sources = getSourceFiles()
             symbolProcessorProviders = listOf(object : SymbolProcessorProvider {
                 override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
                     return object : SymbolProcessor {
+                        lateinit var aapContext: AapContext
                         override fun process(resolver: Resolver): List<KSAnnotated> {
                             KspContext.init(environment, resolver)
                             KspLog.init(environment.logger, true)
-                            KspLog.info("DeepCopySymbolProcessor, ${KotlinVersion.CURRENT}")
-                            resolver.getSymbolsWithAnnotation(AapKspImpl::class.qualifiedName!!)
-                                .filterIsInstance<KSClassDeclaration>()
-                                .forEach {
-                                    KspLog.info("1 ${it.qualifiedName?.getShortName()} ")
-                                    it.annotations.forEach {
-                                        KspLog.info("2 ${it.arguments} ")
-                                        it.arguments.forEach {
-                                            if(it.value is KSTypeImpl){
-                                                KspLog.info("3 ${it.name?.getShortName()}, ${it.value.toString()} ," +
-                                                        " ${(it.value as KSTypeImpl).toClassName()} ")
-                                            }else{
-                                                KspLog.info("3 ${it.name?.getShortName()}, ${it.value.toString()}")
-                                            }
-                                        }
-                                    }
+                            KspLog.info("SymbolProcessor Version, ${KotlinVersion.CURRENT}")
+                            KspLog.info("SymbolProcessor Options, ${environment.options}")
+                            aapContext = AapContext(KspContext, environment.options)
+                            val apiImpls = resolver.getSymbolsWithAnnotation(AapKspImpl::class.qualifiedName!!)
+                                    .filterIsInstance<KSClassDeclaration>()
+                                    .map { AapMeta(aapContext, it) }
+                                     .toSet()
+                            try {
+                                apiImpls.iterator().forEach {
+                                    KspLog.info("2 >> 0 \n $it")
                                 }
+                            }catch (e : Exception){
+                                KspLog.info("2 >> 1 $e")
+                            }
+                            AapMetas(aapContext).writeTo(apiImpls)
                             return emptyList()
                         }
                     }
                 }
+            })
+            kspArgs.putAll(hashMapOf<String, String>().apply {
+                this.put(AapOptions.DEBUG_OPTION, "true")
+                this.put(AapOptions.BUNDLE_OPTION, "app")
             })
         }.compile()
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)

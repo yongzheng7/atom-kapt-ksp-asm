@@ -11,8 +11,8 @@ import com.atom.module.annotation.aap.AapKspImpl
  * @date: 2022/3/7
  * @Copyright: 2022/3/7 www.rongdasoft.com Inc. All rights reserved.
  */
-@AapKspImpl(Person::class, name = "ManStudent" , version = 3)
-class ManStudent() : Person {
+@AapKspImpl(Person::class, name = "ManStudent", version = 3)
+class ManStudent() : AbstractStudent(), Person {
 
     constructor(name: String) : this()
 

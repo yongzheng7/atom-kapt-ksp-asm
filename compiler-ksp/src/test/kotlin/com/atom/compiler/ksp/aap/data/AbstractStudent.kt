@@ -11,6 +11,6 @@ import com.atom.module.annotation.aap.AapKspImpl
  * @date: 2022/3/7
  * @Copyright: 2022/3/7 www.rongdasoft.com Inc. All rights reserved.
  */
-@AapKspImpl(Person::class , name = "AbstractStudent" , version = 1)
-abstract class AbstractStudent : Person {
+@AapKspImpl(Person::class, name = "AbstractStudent", version = 1)
+abstract class AbstractStudent : AbstractPerson(), Person {
 }
