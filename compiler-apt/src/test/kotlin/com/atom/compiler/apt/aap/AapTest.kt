@@ -7,16 +7,20 @@ import com.atom.compiler.test.core.*
 import com.atom.compiler.test.core.SourceFile.Companion.loadSourceFile
 import com.atom.compiler.test.ksp.symbolProcessorProviders
 import com.atom.module.annotation.aap.AapImpl
+import com.atom.module.annotation.aap.AapKspImpl
+import com.squareup.kotlinpoet.asTypeName
 import org.assertj.core.api.Assertions
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import java.io.File
+import java.lang.RuntimeException
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
-import javax.lang.model.element.TypeElement
+import javax.lang.model.element.*
+import javax.lang.model.type.TypeMirror
 
 class AapTest {
 
@@ -61,6 +65,35 @@ class AapTest {
         println(classFile)
     }
 
+
+
+    private fun getEventTypeAnnotationMirror(typeElement: Element, clazz: Class<*>): AnnotationMirror? {
+        val clazzName = clazz.name
+        for (m in typeElement.annotationMirrors) {
+            if (m.annotationType.toString() == clazzName) {
+                return m
+            }
+        }
+        return null
+    }
+
+    private fun getAnnotationValue(annotationMirror: AnnotationMirror, key: String): AnnotationValue? {
+        for ((key1, value) in annotationMirror.elementValues) {
+            if (key1!!.simpleName.toString() == key) {
+                return value
+            }
+        }
+        return null
+    }
+    private fun getMyValue(foo: Element, clazz: Class<*>, key: String): TypeMirror? {
+        val am = getEventTypeAnnotationMirror(foo, clazz) ?: return null
+        val av = getAnnotationValue(am, key)
+        return if (av == null) {
+            null
+        } else {
+            av.value as TypeMirror
+        }
+    }
 
     @Test
     fun `test simple add annotations`() {
@@ -111,6 +144,37 @@ class AapTest {
                         AapImpl::class.java
                     )?.onEach {
                         println("test_aap2  $it")
+                    }
+                    return false
+                }
+            })
+            inheritClassPath = true
+        }.compile()
+        Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    }
+    @Test
+    fun `测试使用 AapKspImpl 注解 , 看api为Kclass能否获取到对应的全类型明`() {
+        val result = defaultCompilerConfig().apply {
+            sources = getSourceFiles()
+            annotationProcessors = listOf(object : AbstractProcessor() {
+                override fun getSupportedAnnotationTypes(): MutableSet<String> {
+                    return mutableSetOf<String>().apply {
+                        this.add(AapKspImpl::class.java.canonicalName)
+                    }
+                }
+                override fun process(
+                    annotations: MutableSet<out TypeElement>?,
+                    roundEnv: RoundEnvironment?
+                ): Boolean {
+                    if (roundEnv?.processingOver() == true || annotations?.size == 0) {
+                        return false
+                    }
+                    roundEnv?.getElementsAnnotatedWith(
+                        AapKspImpl::class.java
+                    )?.onEach {
+                        println("test_aap2  $it")
+                        val typeMirror = getMyValue(it,AapKspImpl::class.java,"api")
+                        println("test_aap2  $typeMirror")
                     }
                     return false
                 }

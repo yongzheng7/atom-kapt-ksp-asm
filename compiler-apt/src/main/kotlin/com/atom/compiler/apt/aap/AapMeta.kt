@@ -6,6 +6,7 @@ import com.atom.compiler.apt.ext.isAbstract
 import com.atom.compiler.apt.ext.isPublic
 import com.atom.compiler.apt.utils.ElementUtils
 import com.atom.module.annotation.aap.AapImpl
+import com.atom.module.annotation.aap.AapKspImpl
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
@@ -61,7 +62,6 @@ class AapMeta {
 
     constructor(aapContext: AapContext, element: TypeElement) {
         val annotation: AapImpl = element.getAnnotation(AapImpl::class.java)
-
         this.aapContext = aapContext
 
         this.implQualifiedName = element.qualifiedName.toString()
