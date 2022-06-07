@@ -23,20 +23,15 @@ class AapTest {
 
     lateinit var rootPath: String
 
-    val annotationPath: File
+    private val annotationPath: File
         get() {
             return File(
                 rootPath,
-                "module-annotation\\src\\main\\java\\com\\atom\\module\\annotation\\aap\\AapKspImpl.kt"
+                "module-annotation\\src\\main\\java\\com\\atom\\module\\annotation\\aap\\AapImpl.kt"
             )
         }
 
-    val savePath: String
-        get() {
-            return rootPath + "compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\apt\\aap\\result"
-        }
-
-    val sourcePath: String
+    private val sourcePath: String
         get() {
             return rootPath + "compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\ksp\\aap\\data"
         }
@@ -46,7 +41,10 @@ class AapTest {
         rootPath = "D:\\app_git_android\\demo_asm\\test-plugin-compiler\\"
     }
 
-    fun getSourceFiles(): List<SourceFile> {
+    /**
+     * 获取源码class文件集合
+     */
+    private fun getSourceFiles(): List<SourceFile> {
         val loadSourceFile =
             SourceFile.loadSourceFile(sourcePath)
         val sourceFiles = mutableListOf<SourceFile>()
@@ -56,16 +54,7 @@ class AapTest {
     }
 
     @Test
-    fun ` 检查进行测试验证`() {
-        println("test 1")
-        val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
-        println(mockPlugin)
-        println(mockPlugin.javaClass.name)
-        println("test 2")
-    }
-
-    @Test
-    fun `测试进行遍历添加AapKspImpl的注解的类 2`() {
+    fun `测试进行遍历添加AapImpl的注解的类`() {
         val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
         val result = KotlinCompilation().apply {
             compilerPlugins = listOf(mockPlugin)
@@ -80,15 +69,16 @@ class AapTest {
                             KspLog.info("SymbolProcessor Version, ${KotlinVersion.CURRENT}")
                             KspLog.info("SymbolProcessor Options, ${environment.options}")
                             aapContext = AapContext(KspContext, environment.options)
-                            val apiImpls = resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!)
+                            val apiImpls =
+                                resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!)
                                     .filterIsInstance<KSClassDeclaration>()
                                     .map { AapMeta(aapContext, it) }
-                                     .toSet()
+                                    .toSet()
                             try {
                                 apiImpls.iterator().forEach {
                                     KspLog.info("2 >> 0 \n $it")
                                 }
-                            }catch (e : Exception){
+                            } catch (e: Exception) {
                                 KspLog.info("2 >> 1 $e")
                             }
                             AapMetas(aapContext).writeTo(apiImpls)
@@ -98,8 +88,8 @@ class AapTest {
                 }
             })
             kspArgs.putAll(hashMapOf<String, String>().apply {
-                this.put(AapOptions.DEBUG_OPTION, "true")
-                this.put(AapOptions.BUNDLE_OPTION, "app")
+                this[AapOptions.DEBUG_OPTION] = "true"
+                this[AapOptions.BUNDLE_OPTION] = "appKspModule"
             })
         }.compile()
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)

@@ -44,6 +44,7 @@ class AapMetas(private val aapContext: AapContext) {
         )
         classBuilder.addFunction(FunSpec.constructorBuilder().apply {
             this.modifiers.add(KModifier.PUBLIC)
+            this.callSuperConstructor()
             for (api in apis) {
                 val isHasApi: Boolean = aapContext.classSet.contains(api.apiQualifiedName)
                 if (isHasApi) {
