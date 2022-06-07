@@ -1,9 +1,8 @@
 package com.atom.compiler.ksp.utils
 
 import com.atom.compiler.ksp.common.KspLog
-import com.atom.module.annotation.aap.AapKspImpl
+import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.getAnnotationsByType
-import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
@@ -35,11 +34,11 @@ class Index(resolver: Resolver) {
         resolver.getDeclarationsFromPackage(IndexGenerator.INDEX_PACKAGE)
             .filterIsInstance<KSClassDeclaration>()
             .flatMap {
-                it.getAnnotationsByType(AapKspImpl::class)
+                it.getAnnotationsByType(AapImpl::class)
             }.flatMap {
                 it.name.asSequence()
             }.mapNotNull {
-                resolver.getClassDeclarationByName(it.toString())
+                resolver.getClassDeclarationByName(resolver.getKSNameFromString(it.toString()))
             }.toSet()
             .onEach {
                 KspLog.info(">>> ${it.qualifiedName!!.asString()}")
@@ -63,7 +62,7 @@ class Index(resolver: Resolver) {
     }
 
     val currentConfigs by lazy {
-        resolver.getSymbolsWithAnnotation(AapKspImpl::class.qualifiedName!!)
+        resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!)
             .filterIsInstance<KSClassDeclaration>()
     }
 

@@ -14,4 +14,4 @@ import kotlin.reflect.KClass
 @MustBeDocumented
 @kotlin.annotation.Target(AnnotationTarget.CLASS)
 @kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-annotation class AapImpl(val api: String, val name: String = "", val version: Long = 0)
+annotation class AapImpl(val api: KClass<*>, val name: String = "", val version: Long = 0)

@@ -99,8 +99,8 @@ class AapMetas(private val aapContext: AapContext) {
                 SingleImpl(
                     apiClassName,
                     ClassName.bestGuess(metaApi.implQualifiedName),
-                    metaApi.annotationName,
-                    metaApi.annotationVersion
+                    metaApi.implName,
+                    metaApi.implVersion
                 )
             )
         }

@@ -2,7 +2,7 @@ package com.atom.compiler.ksp.aap
 
 import com.atom.compiler.ksp.common.KspLog
 import com.atom.compiler.ksp.ext.hasPublicEmptyDefaultConstructor
-import com.atom.module.annotation.aap.AapKspImpl
+import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.*
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
@@ -43,7 +43,7 @@ class AapMeta {
             KspLog.info("${it.qualifiedName?.asString()} ${it.parentDeclaration?.qualifiedName} \n ${it.containingFile?.filePath}")
         }
         this.aapContext = aapContext
-        val annotation = element.getAnnotationsByType(AapKspImpl::class).first()
+        val annotation = element.getAnnotationsByType(AapImpl::class).first()
 
         this.implQualifiedName = element.qualifiedName?.asString()
             ?: throw AapException("element.qualifiedName?.asString() is null")// 实现的接口的名字

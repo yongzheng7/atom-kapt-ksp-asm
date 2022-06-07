@@ -5,7 +5,7 @@ import com.atom.compiler.ksp.common.KspLog
 import com.atom.compiler.test.core.*
 import com.atom.compiler.test.ksp.kspArgs
 import com.atom.compiler.test.ksp.symbolProcessorProviders
-import com.atom.module.annotation.aap.AapKspImpl
+import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -80,7 +80,7 @@ class AapTest {
                             KspLog.info("SymbolProcessor Version, ${KotlinVersion.CURRENT}")
                             KspLog.info("SymbolProcessor Options, ${environment.options}")
                             aapContext = AapContext(KspContext, environment.options)
-                            val apiImpls = resolver.getSymbolsWithAnnotation(AapKspImpl::class.qualifiedName!!)
+                            val apiImpls = resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!)
                                     .filterIsInstance<KSClassDeclaration>()
                                     .map { AapMeta(aapContext, it) }
                                      .toSet()

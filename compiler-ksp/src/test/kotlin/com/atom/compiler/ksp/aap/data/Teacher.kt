@@ -1,9 +1,9 @@
 package com.atom.compiler.ksp.aap.data
 
-import com.atom.module.annotation.aap.AapKspImpl
+import com.atom.module.annotation.aap.AapImpl
 import kotlin.jvm.Throws
 
-@AapKspImpl(api = Person::class, name = "Teacher" , version = 2)
+@AapImpl(api = Person::class, name = "Teacher" , version = 2)
 class Teacher : Person {
 
     constructor()

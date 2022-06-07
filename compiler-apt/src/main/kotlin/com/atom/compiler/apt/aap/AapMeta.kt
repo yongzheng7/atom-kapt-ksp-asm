@@ -1,14 +1,8 @@
 package com.atom.compiler.apt.aap
 
-import com.atom.compiler.apt.common.AptLog
-import com.atom.compiler.apt.ext.hasPublicEmptyDefaultConstructor
-import com.atom.compiler.apt.ext.isAbstract
-import com.atom.compiler.apt.ext.isPublic
-import com.atom.compiler.apt.utils.ElementUtils
+import com.atom.compiler.apt.ext.*
 import com.atom.module.annotation.aap.AapImpl
-import com.atom.module.annotation.aap.AapKspImpl
 import javax.lang.model.element.Element
-import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 
@@ -28,22 +22,7 @@ class AapMeta {
             if (!element.hasPublicEmptyDefaultConstructor()) {
                 throw AapException("${element.qualifiedName} has not PublicEmptyDefaultConstructor")
             }
-            val result = AapMeta(aapContext, element)
-            if (Object::class.qualifiedName.equals(result.apiQualifiedName)) {
-                return result
-            }
-            val apiTypeElement = result.apiTypeElement
-            if (!ElementUtils.isAssignable(aapContext.context, element, apiTypeElement)) {
-                val superClassName: String = apiTypeElement.qualifiedName.toString()
-                throw AapException(
-                    "The class ${element.qualifiedName}" +
-                            " annotated with @${AapImpl::class.java.simpleName}" +
-                            if (ElementKind.INTERFACE == apiTypeElement.kind)
-                                " must implement the interface $superClassName" else
-                                " must inherit from  $superClassName"
-                )
-            }
-            return result
+            return AapMeta(aapContext, element)
         }
     }
 
@@ -53,37 +32,33 @@ class AapMeta {
     val apiTypeElement: TypeElement
     val apiQualifiedName: String
 
-    val annotationApi: String
-    val annotationName: String
-    val annotationVersion: Long
+    val implName: String
+    val implVersion: Long
 
     val superTypeMap = mutableMapOf<String, TypeElement>()
     val interfaceTypeMap = mutableMapOf<String, TypeElement>()
 
     constructor(aapContext: AapContext, element: TypeElement) {
-        val annotation: AapImpl = element.getAnnotation(AapImpl::class.java)
+
+        val annotation = element.getAnnotation(AapImpl::class.java)
         this.aapContext = aapContext
 
         this.implQualifiedName = element.qualifiedName.toString()
         this.implTypeElement = element
 
-        this.apiQualifiedName = annotation.api // 实现的接口的名字
+        this.apiQualifiedName = element.getMyValue(AapImpl::class.java, "api").toString()// 实现的接口的名字
         this.apiTypeElement =
-            aapContext.context.elements.getTypeElement(annotation.api) // 对应的接口的element对象
+            aapContext.context.elements.getTypeElement(this.apiQualifiedName) // 对应的接口的element对象
 
-        this.annotationApi = annotation.api
-        this.annotationName = annotation.name
-        this.annotationVersion = annotation.version
-        // TODO 找到接口
-        //addInterface(element)
-        // TODO 父类
-        //addSuper(element)
-        // TODO 进行检查是否继承和实现 注解中api的
-//        if (!(superTypeMap.keys.contains(this.apiQualifiedName)
-//                    || interfaceTypeMap.keys.contains(this.apiQualifiedName))
-//        ) {
-//            throw AapException("[${element}] not extend and interface annotation api")
-//        }
+        this.implName = annotation.name
+        this.implVersion = annotation.version
+        addInterface(element)
+        addSuper(element)
+        if (!(superTypeMap.keys.contains(this.apiQualifiedName)
+                    || interfaceTypeMap.keys.contains(this.apiQualifiedName))
+        ) {
+            throw AapException("[${element}] not extend and interface annotation api")
+        }
     }
 
     private fun addSuper(element: TypeElement) {
@@ -123,9 +98,8 @@ class AapMeta {
             implTypeElement = $implTypeElement , implQualifiedName = $implQualifiedName 
             apiTypeElement  = $apiTypeElement , apiQualifiedName = $apiQualifiedName
             --->
-            annotationApi = $annotationApi
-            annotationName = $annotationName
-            annotationVersion = $annotationVersion
+            implName = $implName
+            implVersion = $implVersion
             --->
             superTypeMap = $superTypeMap
             --->

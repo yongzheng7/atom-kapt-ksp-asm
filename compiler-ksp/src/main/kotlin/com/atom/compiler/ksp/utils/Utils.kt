@@ -2,7 +2,7 @@ package com.atom.compiler.ksp.utils
 
 import com.atom.compiler.ksp.common.KspContext
 import com.atom.compiler.ksp.common.KspLog
-import com.atom.module.annotation.aap.AapKspImpl
+import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -32,7 +32,7 @@ val KSDeclaration.escapedPackageName: String
 
 val KSDeclaration.deepCopiable: Boolean
     get() = this is KSClassDeclaration &&
-            (isAnnotationPresent(AapKspImpl::class) || this in Index)
+            (isAnnotationPresent(AapImpl::class) || this in Index)
 
 
 private val supportedCollectionTypes = setOf(

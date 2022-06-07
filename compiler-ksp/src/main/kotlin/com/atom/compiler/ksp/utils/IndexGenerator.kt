@@ -2,7 +2,7 @@ package com.atom.compiler.ksp.utils
 
 import com.atom.compiler.ksp.common.KspContext
 import com.atom.compiler.ksp.common.KspLog
-import com.atom.module.annotation.aap.AapKspImpl
+import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.squareup.kotlinpoet.AnnotationSpec
@@ -30,7 +30,7 @@ class IndexGenerator {
         ).addType(
             TypeSpec.classBuilder(indexName)
                 .addAnnotation(
-                    AnnotationSpec.builder(AapKspImpl::class)
+                    AnnotationSpec.builder(AapImpl::class)
                         .addMember(
                             "values = [${deepCopyTypes.joinToString { "%S" }}]",
                             *deepCopyTypes.map { it.qualifiedName!!.asString() }.toTypedArray()
