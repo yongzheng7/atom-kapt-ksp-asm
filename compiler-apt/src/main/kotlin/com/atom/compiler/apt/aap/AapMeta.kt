@@ -48,7 +48,7 @@ class AapMeta {
                     AapImpl::class.java,
                     "api"
                 ).toString()
-            ) // 对应的接口的element对象
+            )
 
         this.implName = annotation.name
         this.implVersion = annotation.version
