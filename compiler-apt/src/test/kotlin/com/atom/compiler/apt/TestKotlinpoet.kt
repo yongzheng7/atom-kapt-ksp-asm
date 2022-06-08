@@ -240,6 +240,4 @@ class TestKotlinpoet {
             it.addType(typeSuper.build())
         }
     }
-
-
 }
