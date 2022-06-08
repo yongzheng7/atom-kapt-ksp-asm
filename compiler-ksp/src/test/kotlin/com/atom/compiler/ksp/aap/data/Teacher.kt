@@ -6,7 +6,7 @@ import kotlin.jvm.Throws
 @AapImpl(api = Person::class, name = "Teacher" , version = 2)
 class Teacher : Person {
 
-    internal constructor()
+    constructor()
 
     protected constructor(name: String)
 

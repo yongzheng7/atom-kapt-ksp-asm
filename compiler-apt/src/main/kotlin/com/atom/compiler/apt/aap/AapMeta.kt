@@ -28,9 +28,7 @@ class AapMeta {
 
     val aapContext: AapContext
     val implTypeElement: TypeElement
-    val implQualifiedName: String
     val apiTypeElement: TypeElement
-    val apiQualifiedName: String
 
     val implName: String
     val implVersion: Long
@@ -38,24 +36,26 @@ class AapMeta {
     val superTypeMap = mutableMapOf<String, TypeElement>()
     val interfaceTypeMap = mutableMapOf<String, TypeElement>()
 
-    constructor(aapContext: AapContext, element: TypeElement) {
+    private constructor(aapContext: AapContext, element: TypeElement) {
 
         val annotation = element.getAnnotation(AapImpl::class.java)
         this.aapContext = aapContext
 
-        this.implQualifiedName = element.qualifiedName.toString()
         this.implTypeElement = element
-
-        this.apiQualifiedName = element.getMyValue(AapImpl::class.java, "api").toString()// 实现的接口的名字
         this.apiTypeElement =
-            aapContext.context.elements.getTypeElement(this.apiQualifiedName) // 对应的接口的element对象
+            aapContext.context.elements.getTypeElement(
+                element.getMyValue(
+                    AapImpl::class.java,
+                    "api"
+                ).toString()
+            ) // 对应的接口的element对象
 
         this.implName = annotation.name
         this.implVersion = annotation.version
         addInterface(element)
         addSuper(element)
-        if (!(superTypeMap.keys.contains(this.apiQualifiedName)
-                    || interfaceTypeMap.keys.contains(this.apiQualifiedName))
+        if (!(superTypeMap.values.contains(this.apiTypeElement)
+                    || interfaceTypeMap.values.contains(this.apiTypeElement))
         ) {
             throw AapException("[${element}] not extend and interface annotation api")
         }
@@ -83,10 +83,6 @@ class AapMeta {
         }
     }
 
-    fun isApiImpl(apiQualifiedName: String): Boolean {
-        return this.apiQualifiedName == apiQualifiedName
-    }
-
     override fun toString(): String {
         return """
             
@@ -95,8 +91,8 @@ class AapMeta {
             ---> 
             aapContext=            $aapContext
             --->
-            implTypeElement = $implTypeElement , implQualifiedName = $implQualifiedName 
-            apiTypeElement  = $apiTypeElement , apiQualifiedName = $apiQualifiedName
+            implTypeElement = $implTypeElement , implQualifiedName = ${implTypeElement.qualifiedName} 
+            apiTypeElement  = $apiTypeElement , apiQualifiedName = ${apiTypeElement.qualifiedName} 
             --->
             implName = $implName
             implVersion = $implVersion

@@ -28,10 +28,10 @@ internal class MainCommandLineProcessor : CommandLineProcessor {
 
         private fun decode(str: String) = str // String(Base64.getDecoder().decode(str.replace('%', '=')))
 
-        fun encodeForeignOptionName(processorPluginId: PluginId, optionName: OptionName)
+        fun encodeForeignOptionName(processorPluginId: String, optionName: String)
                 = encode(processorPluginId) + ":" + encode(optionName)
 
-        fun decodeForeignOptionName(str: String): Pair<PluginId, OptionName> {
+        fun decodeForeignOptionName(str: String): Pair<String, String> {
             return Regex("(.*?):(.*)").matchEntire(str)?.groupValues?.let { (_, encodedPluginId, encodedOptionName) ->
                 Pair(decode(encodedPluginId), decode(encodedOptionName))
             }
@@ -40,10 +40,10 @@ internal class MainCommandLineProcessor : CommandLineProcessor {
     }
 
     class ThreadLocalParameters(cliProcessors: List<CommandLineProcessor>) {
-        val cliProcessorsByPluginId: Map<PluginId, List<CommandLineProcessor>>
+        val cliProcessorsByPluginId: Map<String, List<CommandLineProcessor>>
                 = cliProcessors.groupBy(CommandLineProcessor::pluginId)
 
-        val optionByProcessorAndName: Map<Pair<CommandLineProcessor, OptionName>, AbstractCliOption>
+        val optionByProcessorAndName: Map<Pair<CommandLineProcessor, String>, AbstractCliOption>
                 = cliProcessors.flatMap { cliProcessor ->
             cliProcessor.pluginOptions.map { option ->
                 Pair(Pair(cliProcessor, option.optionName), option)

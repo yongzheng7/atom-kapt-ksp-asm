@@ -1,7 +1,5 @@
-package com.atom.compiler.apt
+package com.atom.compiler.apt.core
 
-import com.atom.compiler.apt.core.AptContext
-import com.atom.compiler.apt.core.AptLog
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 
@@ -15,7 +13,7 @@ import javax.lang.model.SourceVersion
  * @Copyright: 2022/3/9 www.rongdasoft.com Inc. All rights reserved.
  */
 
-abstract class BaseProcessor : AbstractProcessor() {
+abstract class AptProcessor : AbstractProcessor() {
     final override fun init(processingEnv: ProcessingEnvironment?) {
         super.init(processingEnv)
         processingEnv?.also {

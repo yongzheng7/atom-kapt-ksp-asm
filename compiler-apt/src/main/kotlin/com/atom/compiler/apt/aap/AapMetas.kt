@@ -43,10 +43,10 @@ class AapMetas(private val aapContext: AapContext) {
             this.modifiers.add(KModifier.PUBLIC)
             this.callSuperConstructor()
             for (api in impls) {
-                if (aapContext.classSet.contains(api.apiQualifiedName)) {
+                if (aapContext.classSet.contains(api.apiTypeElement)) {
                     continue
                 } else {
-                    aapContext.classSet.add(api.apiQualifiedName)
+                    aapContext.classSet.add(api.apiTypeElement)
                 }
                 for (impl in getImplNames(api, impls)) {
                     this.addStatement(
@@ -56,7 +56,7 @@ class AapMetas(private val aapContext: AapContext) {
                 }
             }
         }.build())
-        return this;
+        return this
     }
 
     fun assembleCode() {

@@ -3,6 +3,7 @@ package com.atom.compiler.apt.aap
 import com.atom.compiler.apt.aap.data.Teacher
 import com.atom.compiler.apt.core.AptContext
 import com.atom.compiler.apt.core.AptLog
+import com.atom.compiler.apt.core.AptProcessor
 import com.atom.compiler.apt.ext.annotationToMap
 import com.atom.compiler.apt.ext.getMyValue
 import com.atom.compiler.test.core.*
@@ -23,7 +24,7 @@ class AapTest {
 
     lateinit var rootPath: String
 
-    val aapImplPath: File
+    private val aapImplPath: File
         get() {
             return File(
                 rootPath,
@@ -31,7 +32,7 @@ class AapTest {
             )
         }
 
-    val savePath: String
+    private val savePath: String
         get() {
             return rootPath + "compiler-apt\\src\\test\\kotlin\\com\\atom\\compiler\\apt\\aap\\result"
         }
@@ -41,7 +42,7 @@ class AapTest {
         rootPath = "D:\\app_git_android\\demo_asm\\test-plugin-compiler\\"
     }
 
-    fun getSourceFiles(): List<SourceFile> {
+    private fun getSourceFiles(): List<SourceFile> {
         val loadSourceFile =
             loadSourceFile("D:\\app_git_android\\demo_asm\\test-plugin-compiler\\compiler-apt\\src\\test\\kotlin\\com\\atom\\compiler\\apt\\aap\\data")
         val sourceFiles = mutableListOf<SourceFile>()
@@ -51,28 +52,19 @@ class AapTest {
     }
 
     @Test
-    fun test() {
-        println("test 1")
-        val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
-        println(mockPlugin)
-        println(mockPlugin.javaClass.name)
-        println("test 2")
-
-        val classFile = SourceFile.getClassFile(Teacher::class.java)
-        println(classFile)
-    }
-
-    @Test
-    fun `test simple add annotations`() {
+    fun `测试一个简单的注解处理器`() {
         val annotationProcessor = object : AbstractProcessor() {
             override fun getSupportedAnnotationTypes(): Set<String> =
                 setOf(AapImpl::class.java.canonicalName).also {
                     println("getSupportedAnnotationTypes 1 ${AapImpl::class.java.canonicalName}")
                 }
 
-            override fun process(p0: MutableSet<out TypeElement>?, p1: RoundEnvironment?): Boolean {
+            override fun process(annotations: MutableSet<out TypeElement>?, roundEnv: RoundEnvironment?): Boolean {
+                if (roundEnv?.processingOver() == true || annotations?.size == 0) {
+                    return false
+                }
                 println("annotationProcessor process")
-                p1?.getElementsAnnotatedWith(AapImpl::class.java)?.forEach {
+                roundEnv?.getElementsAnnotatedWith(AapImpl::class.java)?.forEach {
                     println("annotationProcessor ${it?.simpleName.toString()}")
                 }
                 return false
@@ -86,42 +78,11 @@ class AapTest {
             inheritClassPath = true
         }.compile()
         println(result)
-    }
-
-
-    @Test
-    fun test_aap2() {
-        val result = defaultCompilerConfig().apply {
-            sources = getSourceFiles()
-            annotationProcessors = listOf(object : AbstractProcessor() {
-                override fun getSupportedAnnotationTypes(): MutableSet<String> {
-                    return mutableSetOf<String>().apply {
-                        this.add(AapImpl::class.java.canonicalName)
-                    }
-                }
-
-                override fun process(
-                    annotations: MutableSet<out TypeElement>?,
-                    roundEnv: RoundEnvironment?
-                ): Boolean {
-                    if (roundEnv?.processingOver() == true || annotations?.size == 0) {
-                        return false
-                    }
-                    roundEnv?.getElementsAnnotatedWith(
-                        AapImpl::class.java
-                    )?.onEach {
-                        println("test_aap2  $it")
-                    }
-                    return false
-                }
-            })
-            inheritClassPath = true
-        }.compile()
         Assertions.assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
     }
 
     @Test
-    fun `测试使用 AapKspImpl 注解 , 看api为Kclass能否获取到对应的全类型明`() {
+    fun `测试使用 AapImpl 注解 , 看api为Kclass能否获取到对应的全类型明`() {
         val result = defaultCompilerConfig().apply {
             sources = getSourceFiles()
             annotationProcessors = listOf(object : AbstractProcessor() {
@@ -156,13 +117,24 @@ class AapTest {
     }
 
     @Test
-    fun `test AapProcessor`() {
+    fun `测试AapProcessor`() {
         val mockPlugin = Mockito.mock(ComponentRegistrar::class.java)
         val result = defaultCompilerConfig().apply {
             sources = getSourceFiles()
-            annotationProcessors = listOf(AapProcessor())
+            annotationProcessors = listOf(object : AptProcessor(){
+                override fun initOptions(context: AptContext, options: Map<String, String>) {
+                    AptLog.info("AapProcessor initOptions $options")
+                }
+
+                override fun process(
+                    p0: MutableSet<out TypeElement>?,
+                    p1: RoundEnvironment?
+                ): Boolean {
+                    return false
+                }
+            })
             inheritClassPath = true
-            kaptArgs.putAll(hashMapOf<OptionName, OptionValue>().apply {
+            kaptArgs.putAll(hashMapOf<String, String>().apply {
                 this.put("debug", "true")
                 this.put("bundleClassname", "app")
             })
@@ -214,9 +186,9 @@ class AapTest {
             annotationProcessors = listOf(annotationProcessor)
             compilerPlugins = listOf(mockPlugin)
             inheritClassPath = true
-            kaptArgs.putAll(hashMapOf<OptionName, OptionValue>().apply {
-                this.put(AapOptions.DEBUG_OPTION, "true")
-                this.put(AapOptions.BUNDLE_OPTION, "app")
+            kaptArgs.putAll(hashMapOf<String, String>().apply {
+                this[AapOptions.DEBUG_OPTION] = "true"
+                this[AapOptions.BUNDLE_OPTION] = "app"
             })
         }.compile()
         println(result)

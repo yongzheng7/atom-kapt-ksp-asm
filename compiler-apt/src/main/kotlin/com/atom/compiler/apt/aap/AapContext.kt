@@ -4,12 +4,13 @@ import com.atom.compiler.apt.core.AptContext
 import com.atom.compiler.apt.core.AptLog
 import com.atom.compiler.apt.ext.upperFirstLetter
 import java.text.SimpleDateFormat
+import javax.lang.model.element.TypeElement
 
 class AapContext(val context: AptContext, options: Map<String, String>) {
 
     val moduleName: String
     val isDebug: Boolean
-    val classSet = HashSet<String>()
+    val classSet = HashSet<TypeElement>()
 
     @Suppress("SimpleDateFormat")
     val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
