@@ -1,7 +1,7 @@
 package com.atom.compiler.apt
 
-import com.atom.compiler.apt.common.AptContext
-import com.atom.compiler.apt.common.AptLog
+import com.atom.compiler.apt.core.AptContext
+import com.atom.compiler.apt.core.AptLog
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
 

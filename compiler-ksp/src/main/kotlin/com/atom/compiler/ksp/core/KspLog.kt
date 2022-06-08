@@ -1,10 +1,8 @@
-package com.atom.compiler.ksp.common
+package com.atom.compiler.ksp.core
 
 import com.google.devtools.ksp.processing.KSPLogger
 import java.lang.StringBuilder
-import javax.annotation.processing.Messager
 import javax.lang.model.element.Element
-import javax.tools.Diagnostic
 
 /**
  * All rights Reserved, Designed By www.rongdasoft.com
@@ -22,34 +20,32 @@ object KspLog {
     var debug = false
 
     fun init(msg: KSPLogger, isDebug: Boolean) {
-        this.msg = msg
-        this.debug = isDebug
+        KspLog.msg = msg
+        debug = isDebug
     }
 
     fun info(info: String) {
         if (info.isNotEmpty() && debug) {
-            msg?.info(
-                """
-     $info
-     
-     """.trimIndent()
-            )
+            msg?.info(info)
+            println(info)
         }
     }
 
     fun error(error: String) {
         if (error.isNotEmpty() && debug) {
-            msg!!.error(
+            msg?.error(
                 "An exception is encountered, [$error]\n"
             )
+            println("An exception is encountered, [$error]\n")
         }
     }
 
     fun error(error: String, var3: Element?) {
         if (error.isNotEmpty() && var3 != null && debug) {
             msg?.error(
-                "An exception is encountered, [$error]\n  $var3",
+                "An exception is encountered, [$error]\n  $var3"
             )
+            println("An exception is encountered, [$error]\n  $var3")
         }
     }
 
@@ -61,19 +57,24 @@ object KspLog {
                 ${formatStackTrace(error.stackTrace)}
                 """.trimIndent()
             )
+            println("""
+                An exception is encountered, [${error.message}]
+                ${formatStackTrace(error.stackTrace)}
+                """.trimIndent())
         }
     }
 
     fun warning(warning: CharSequence?) {
         if (!warning.isNullOrEmpty() && debug) {
             msg?.warn(warning.toString())
+            println(warning.toString())
         }
     }
 
     private fun formatStackTrace(stackTrace: Array<StackTraceElement>): String {
         val sb = StringBuilder()
         for (element in stackTrace) {
-            sb.append("    at ").append(element.toString())
+            sb.append("at").append(element.toString())
             sb.append("\n")
         }
         return sb.toString()

@@ -1,8 +1,7 @@
 package com.atom.compiler.apt.utils
 
-import com.atom.compiler.apt.common.AptContext
-import com.atom.compiler.apt.common.AptLog
-import com.atom.compiler.apt.common.AptLog.error
+import com.atom.compiler.apt.core.AptContext
+import com.atom.compiler.apt.core.AptLog.error
 import java.util.*
 import javax.lang.model.element.*
 import javax.lang.model.type.DeclaredType

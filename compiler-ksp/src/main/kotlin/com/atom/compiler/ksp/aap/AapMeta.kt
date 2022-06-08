@@ -1,12 +1,12 @@
 package com.atom.compiler.ksp.aap
 
-import com.atom.compiler.ksp.common.KspLog
+import com.atom.compiler.ksp.core.KspLog
+import com.atom.compiler.ksp.ext.getClassCanonicalName
 import com.atom.compiler.ksp.ext.hasPublicEmptyDefaultConstructor
 import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.*
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import kotlin.reflect.KClass
 
 class AapMeta {
 
@@ -27,32 +27,25 @@ class AapMeta {
 
     val aapContext: AapContext
     val implTypeElement: KSClassDeclaration
-    val implQualifiedName: String
-
     val apiTypeElement: KSClassDeclaration
-    val apiQualifiedName: String
-
     val implName: String
     val implVersion: Long
-
     val superTypeMap = mutableMapOf<String, KSType>()
 
-    constructor(aapContext: AapContext, element: KSClassDeclaration) {
+    private constructor(aapContext: AapContext, element: KSClassDeclaration) {
         element.declarations.iterator().forEach {
             KspLog.info("${it.qualifiedName?.asString()} ${it.parentDeclaration?.qualifiedName} \n ${it.containingFile?.filePath}")
         }
         this.aapContext = aapContext
         val annotation = element.getAnnotationsByType(AapImpl::class).first()
 
-        this.implQualifiedName = element.qualifiedName?.asString()
-            ?: throw AapException("element.qualifiedName?.asString() is null")// 实现的接口的名字
         this.implTypeElement = element
         // it.value is KSTypeImpl
-
-        this.apiQualifiedName = annotation.api.qualifiedName
-            ?: throw AapException("annotation.api.qualifiedName is null")// 实现的接口的名字
         this.apiTypeElement =
-            aapContext.context.resolver.getClassDeclarationByName(apiQualifiedName)
+            aapContext.context.resolver.getClassDeclarationByName(
+                annotation.api.qualifiedName
+                    ?: throw AapException("annotation.api.qualifiedName is null")
+            )
                 ?: throw AapException("aapContext.context.resolver.getClassDeclarationByName(apiQualifiedName) is null")
         // 对应的接口的element对象
 
@@ -61,7 +54,7 @@ class AapMeta {
 
         addSuperType(element)
 
-        if (!superTypeMap.keys.contains(this.apiQualifiedName)) {
+        if (!superTypeMap.keys.contains(annotation.api.qualifiedName)) {
             throw AapException("[${element}] not extend and interface annotation api")
         }
     }
@@ -74,10 +67,6 @@ class AapMeta {
         }
     }
 
-    fun isApiImpl(apiQualifiedName: String): Boolean {
-        return this.apiQualifiedName == apiQualifiedName
-    }
-
     override fun toString(): String {
         return """
 
@@ -86,8 +75,8 @@ class AapMeta {
             --->
             aapContext=            $aapContext
             --->
-            implTypeElement = $implTypeElement , implQualifiedName = $implQualifiedName
-            apiTypeElement  = $apiTypeElement , apiQualifiedName = $apiQualifiedName
+            apiTypeElement  = $apiTypeElement , apiQualifiedName = ${apiTypeElement.getClassCanonicalName()}
+            implTypeElement = $implTypeElement , implQualifiedName = ${implTypeElement.getClassCanonicalName()}
             --->
             implName = $implName
             implVersion = $implVersion

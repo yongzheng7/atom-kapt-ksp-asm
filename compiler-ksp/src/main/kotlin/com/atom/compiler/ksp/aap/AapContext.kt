@@ -1,15 +1,16 @@
 package com.atom.compiler.ksp.aap
 
-import com.atom.compiler.ksp.common.KspContext
-import com.atom.compiler.ksp.common.KspLog
+import com.atom.compiler.ksp.core.KspContext
+import com.atom.compiler.ksp.core.KspLog
 import com.atom.compiler.ksp.ext.upperFirstLetter
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import java.text.SimpleDateFormat
 
 class AapContext(val context: KspContext, options: Map<String, String>) {
 
     val moduleName: String
     val isDebug: Boolean
-    val classSet = HashSet<String>()
+    val classSet = HashSet<KSClassDeclaration>()
 
     @Suppress("SimpleDateFormat")
     val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")

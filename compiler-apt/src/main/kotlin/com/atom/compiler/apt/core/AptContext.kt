@@ -1,4 +1,4 @@
-package com.atom.compiler.apt.common
+package com.atom.compiler.apt.core
 
 import javax.annotation.processing.Filer
 import javax.annotation.processing.Messager

@@ -1,8 +1,8 @@
 package com.atom.compiler.apt.aap
 
 import com.atom.compiler.apt.BaseProcessor
-import com.atom.compiler.apt.common.AptContext
-import com.atom.compiler.apt.common.AptLog
+import com.atom.compiler.apt.core.AptContext
+import com.atom.compiler.apt.core.AptLog
 import com.atom.module.annotation.aap.AapImpl
 import com.google.auto.service.AutoService
 import javax.annotation.processing.*

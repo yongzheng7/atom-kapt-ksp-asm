@@ -1,7 +1,7 @@
 package com.atom.compiler.ksp.utils
 
-import com.atom.compiler.ksp.common.KspContext
-import com.atom.compiler.ksp.common.KspLog
+import com.atom.compiler.ksp.core.KspContext
+import com.atom.compiler.ksp.core.KspLog
 import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.getClassDeclarationByName
 import com.google.devtools.ksp.isAnnotationPresent

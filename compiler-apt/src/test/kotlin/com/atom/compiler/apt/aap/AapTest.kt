@@ -1,8 +1,8 @@
 package com.atom.compiler.apt.aap
 
 import com.atom.compiler.apt.aap.data.Teacher
-import com.atom.compiler.apt.common.AptContext
-import com.atom.compiler.apt.common.AptLog
+import com.atom.compiler.apt.core.AptContext
+import com.atom.compiler.apt.core.AptLog
 import com.atom.compiler.apt.ext.annotationToMap
 import com.atom.compiler.apt.ext.getMyValue
 import com.atom.compiler.test.core.*
@@ -18,7 +18,6 @@ import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.*
-import javax.lang.model.type.TypeMirror
 
 class AapTest {
 

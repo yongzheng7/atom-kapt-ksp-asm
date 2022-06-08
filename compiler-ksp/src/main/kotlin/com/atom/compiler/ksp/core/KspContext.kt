@@ -1,10 +1,8 @@
-package com.atom.compiler.ksp.common
+package com.atom.compiler.ksp.core
 
 import com.google.devtools.ksp.processing.KSBuiltIns
-import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
-import javax.annotation.processing.ProcessingEnvironment
 
 object KspContext {
 
@@ -15,7 +13,7 @@ object KspContext {
         get() = resolver.builtIns
 
     fun init(environment: SymbolProcessorEnvironment, resolver: Resolver) {
-        this.environment = environment
-        this.resolver = resolver
+        KspContext.environment = environment
+        KspContext.resolver = resolver
     }
 }

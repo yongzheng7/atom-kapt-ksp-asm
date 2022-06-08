@@ -1,6 +1,6 @@
 package com.atom.compiler.ksp.utils
 
-import com.atom.compiler.ksp.common.KspLog
+import com.atom.compiler.ksp.core.KspLog
 import com.atom.module.annotation.aap.AapImpl
 import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.processing.Resolver
@@ -61,6 +61,7 @@ class Index(resolver: Resolver) {
             .toSet()
     }
 
+    // 获取被AapImpl注解的class集合
     val currentConfigs by lazy {
         resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!)
             .filterIsInstance<KSClassDeclaration>()

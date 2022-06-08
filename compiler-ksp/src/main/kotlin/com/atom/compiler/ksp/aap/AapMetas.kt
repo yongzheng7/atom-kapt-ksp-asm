@@ -45,11 +45,10 @@ class AapMetas(private val aapContext: AapContext) {
             this.modifiers.add(KModifier.PUBLIC)
             this.callSuperConstructor()
             for (api in apis) {
-                val isHasApi: Boolean = aapContext.classSet.contains(api.apiQualifiedName)
-                if (isHasApi) {
+                if (aapContext.classSet.contains(api.apiTypeElement)) {
                     continue
                 } else {
-                    aapContext.classSet.add(api.apiQualifiedName)
+                    aapContext.classSet.add(api.apiTypeElement)
                 }
                 val singleList: MutableList<SingleImpl> = ArrayList()
                 getImplNames(api, apis, singleList)

@@ -6,12 +6,12 @@ import kotlin.jvm.Throws
 @AapImpl(api = Person::class, name = "Teacher" , version = 2)
 class Teacher : Person {
 
-    constructor()
+    internal constructor()
 
-    constructor(name: String)
+    protected constructor(name: String)
 
     @Throws(Exception::class)
-    constructor(name: String, ago: Int)
+    public constructor(name: String, ago: Int)
 
     private constructor(name: String, ago: Int, address: String)
 

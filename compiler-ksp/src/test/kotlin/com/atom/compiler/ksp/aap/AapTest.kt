@@ -1,7 +1,7 @@
 package com.atom.compiler.ksp.aap
 
-import com.atom.compiler.ksp.common.KspContext
-import com.atom.compiler.ksp.common.KspLog
+import com.atom.compiler.ksp.core.KspContext
+import com.atom.compiler.ksp.core.KspLog
 import com.atom.compiler.test.core.*
 import com.atom.compiler.test.ksp.kspArgs
 import com.atom.compiler.test.ksp.symbolProcessorProviders
@@ -72,16 +72,18 @@ class AapTest {
                             val apiImpls =
                                 resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!)
                                     .filterIsInstance<KSClassDeclaration>()
-                                    .map { AapMeta(aapContext, it) }
-                                    .toSet()
-                            try {
-                                apiImpls.iterator().forEach {
-                                    KspLog.info("2 >> 0 \n $it")
+                            val result = mutableSetOf<AapMeta>()
+                            apiImpls.forEach {
+                                try {
+                                    AapMeta.create(aapContext, it).also { aapMeta ->
+                                        KspLog.info("2 >> 0 \n $aapMeta")
+                                        result.add(aapMeta)
+                                    }
+                                } catch (e: Exception) {
+                                    KspLog.info("2 >> 1 $e")
                                 }
-                            } catch (e: Exception) {
-                                KspLog.info("2 >> 1 $e")
                             }
-                            AapMetas(aapContext).addMetasCode(apiImpls).assembleCode()
+                            AapMetas(aapContext).addMetasCode(result).assembleCode()
                             return emptyList()
                         }
                     }
