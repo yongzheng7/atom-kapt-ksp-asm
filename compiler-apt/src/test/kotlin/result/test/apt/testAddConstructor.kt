@@ -1,8 +1,8 @@
-package com.atom.apt
+package result.test.apt
 
 import kotlin.String
 
-public class Aap {
+public class testAddConstructor {
   private val greeting: String
 
   public constructor(greeting: String) {

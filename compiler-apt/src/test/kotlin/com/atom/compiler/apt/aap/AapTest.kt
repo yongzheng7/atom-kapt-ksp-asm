@@ -204,9 +204,7 @@ class AapTest {
                 }
                 AptLog.info("process assemble finish \n $apiImpls")
                 AptLog.info("process assemble final class start  \n $aapContext")
-                val aapMetas = AapMetas(aapContext)
-                val createFile = aapMetas.createFile(apiImpls)
-                aapMetas.writeFile(createFile)
+                AapMetas(aapContext).addMetasCode(apiImpls).assembleCode()
                 AptLog.info("process assemble final class end  \n $aapContext")
                 return false
             }

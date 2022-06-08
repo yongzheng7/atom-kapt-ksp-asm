@@ -1,4 +1,4 @@
-package com.atom.compiler.apt.poet.common;
+package com.atom.compiler.apt.common;
 
 public interface JavaInterfaceClass1 extends JavaInterfaceClass0 {
 }

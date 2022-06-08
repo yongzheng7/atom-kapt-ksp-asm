@@ -1,27 +1,23 @@
 package com.atom.compiler.apt.aap
 
-import com.atom.compiler.apt.ext.createFile
 import com.atom.module.annotation.aap.AapAutoClass
 import com.atom.module.annotation.aap.AapImplEntry
 import com.squareup.kotlinpoet.*
-import org.jetbrains.annotations.TestOnly
 import java.io.IOException
 import java.util.*
-import javax.lang.model.element.Modifier
 
 class AapMetas(private val aapContext: AapContext) {
 
     private val aapPacketName = AapOptions.AAP_PACKET
     private val aapModuleName: String = aapContext.moduleName
-
-    fun createFile(apis: Set<AapMeta>): TypeSpec.Builder {
-        // create class builder
-        val classBuilder = TypeSpec.classBuilder(ClassName(aapPacketName, aapModuleName)).apply {
+    private val classBuilder: TypeSpec.Builder =
+        TypeSpec.classBuilder(ClassName(aapPacketName, aapModuleName)).apply {
             modifiers.add(KModifier.PUBLIC)
         }
+
+    fun addMetasCode(impls: Set<AapMeta>): AapMetas {
         // add builder super class
         classBuilder.superclass(ClassName.bestGuess(AapImplEntry::class.qualifiedName!!))
-
         val formatDateValue: String = aapContext.dateFormat.format(Date())
         // 代码创建 文档
         classBuilder.addKdoc(
@@ -45,28 +41,25 @@ class AapMetas(private val aapContext: AapContext) {
         )
         classBuilder.addFunction(FunSpec.constructorBuilder().apply {
             this.modifiers.add(KModifier.PUBLIC)
-            for (api in apis) {
-                val isHasApi: Boolean = aapContext.classSet.contains(api.apiQualifiedName)
-                if (isHasApi) {
+            this.callSuperConstructor()
+            for (api in impls) {
+                if (aapContext.classSet.contains(api.apiQualifiedName)) {
                     continue
                 } else {
                     aapContext.classSet.add(api.apiQualifiedName)
                 }
-                val singleList: MutableList<SingleImpl> = ArrayList()
-                getImplNames(api, apis, singleList)
-                for (impl in singleList) {
-                    println("  >>>>>>  $impl")
+                for (impl in getImplNames(api, impls)) {
                     this.addStatement(
-                        "add( %S , %T::class.java , %T::class.java , ${impl.version})" ,
-                        impl.name ,impl.apiClass ,impl.implClass ,
+                        "add( %S , %T::class.java , %T::class.java , ${impl.version})",
+                        impl.name, impl.apiClass, impl.implClass,
                     )
                 }
             }
         }.build())
-        return classBuilder
+        return this;
     }
 
-    fun writeFile(classBuilder: TypeSpec.Builder) {
+    fun assembleCode() {
         val builder = FileSpec.get(aapPacketName, classBuilder.build())
         try {
             builder.writeTo(aapContext.context.filer)
@@ -75,35 +68,26 @@ class AapMetas(private val aapContext: AapContext) {
         }
     }
 
-    @TestOnly
-    internal fun writeFile(classBuilder: TypeSpec.Builder, path: String) {
-        val builder = FileSpec.get(aapPacketName, classBuilder.build())
-        try {
-            builder.writeTo(path.createFile())
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
     private fun getImplNames(
         api: AapMeta,
         impls: Collection<AapMeta>,
-        result: MutableList<SingleImpl>
-    ) {
-        val apiClassName = ClassName.bestGuess(api.apiQualifiedName)
+    ): List<SingleImpl> {
+        val result: MutableList<SingleImpl> = mutableListOf()
+        val apiClassName = api.apiTypeElement.asClassName()
         for (metaApi in impls) {
-            if (!metaApi.isApiImpl(api.apiQualifiedName)) {
+            if (api.apiTypeElement != metaApi.apiTypeElement) {
                 continue
             }
             result.add(
                 SingleImpl(
                     apiClassName,
-                    ClassName.bestGuess(metaApi.implQualifiedName),
+                    metaApi.implTypeElement.asClassName(),
                     metaApi.implName,
                     metaApi.implVersion
                 )
             )
         }
+        return result
     }
 
     internal data class SingleImpl(

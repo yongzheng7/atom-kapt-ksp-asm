@@ -32,9 +32,8 @@ class AapMeta {
     val apiTypeElement: KSClassDeclaration
     val apiQualifiedName: String
 
-    val annotationApi: KClass<*>
-    val annotationName: String
-    val annotationVersion: Long
+    val implName: String
+    val implVersion: Long
 
     val superTypeMap = mutableMapOf<String, KSType>()
 
@@ -57,9 +56,8 @@ class AapMeta {
                 ?: throw AapException("aapContext.context.resolver.getClassDeclarationByName(apiQualifiedName) is null")
         // 对应的接口的element对象
 
-        this.annotationApi = annotation.api
-        this.annotationName = annotation.name
-        this.annotationVersion = annotation.version
+        this.implName = annotation.name
+        this.implVersion = annotation.version
 
         addSuperType(element)
 
@@ -91,9 +89,8 @@ class AapMeta {
             implTypeElement = $implTypeElement , implQualifiedName = $implQualifiedName
             apiTypeElement  = $apiTypeElement , apiQualifiedName = $apiQualifiedName
             --->
-            annotationApi = $annotationApi
-            annotationName = $annotationName
-            annotationVersion = $annotationVersion
+            implName = $implName
+            implVersion = $implVersion
             --->
             superTypeMap = $superTypeMap
             ----------------------------------------------------------------------------------------

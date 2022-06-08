@@ -1,9 +1,9 @@
 package com.atom.compiler.ksp.aap
 
-import com.atom.compiler.ksp.common.KspContext
 import com.atom.module.annotation.aap.AapAutoClass
 import com.atom.module.annotation.aap.AapImplEntry
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import java.io.IOException
 import java.util.*
@@ -12,15 +12,14 @@ class AapMetas(private val aapContext: AapContext) {
 
     private val aapPacketName = AapOptions.AAP_PACKET
     private val aapModuleName: String = aapContext.moduleName
-
-    fun writeTo(apis: Set<AapMeta>) {
-        // create class builder
-        val classBuilder = TypeSpec.classBuilder(ClassName(aapPacketName, aapModuleName)).apply {
+    private val classBuilder: TypeSpec.Builder =
+        TypeSpec.classBuilder(ClassName(aapPacketName, aapModuleName)).apply {
             modifiers.add(KModifier.PUBLIC)
         }
+
+    fun addMetasCode(apis: Set<AapMeta>): AapMetas {
         // add builder super class
         classBuilder.superclass(ClassName.bestGuess(AapImplEntry::class.qualifiedName!!))
-
         val formatDateValue: String = aapContext.dateFormat.format(Date())
         // 代码创建 文档
         classBuilder.addKdoc(
@@ -33,7 +32,7 @@ class AapMetas(private val aapContext: AapContext) {
         )
         classBuilder.addAnnotation(
             AnnotationSpec.builder(AapAutoClass::class.java)
-                .addMember("value = [%S]", AapSymbolProcessor::class.java.simpleName)
+                .addMember("value = [%S]", AapSymbolProcessorProvider::class.java.simpleName)
                 .addMember("data = %S", formatDateValue)
                 .build()
         )
@@ -63,10 +62,13 @@ class AapMetas(private val aapContext: AapContext) {
                 }
             }
         }.build())
+        return this;
+    }
 
+    fun assembleCode() {
         val builder = FileSpec.get(aapPacketName, classBuilder.build())
         try {
-            builder.writeTo(KspContext.environment.codeGenerator, false)
+            builder.writeTo(aapContext.context.environment.codeGenerator, false)
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -74,20 +76,20 @@ class AapMetas(private val aapContext: AapContext) {
 
     private fun getImplNames(
         api: AapMeta,
-        impls: Set<AapMeta>,
+        impls: Collection<AapMeta>,
         result: MutableList<SingleImpl>
     ) {
-        val apiClassName = ClassName.bestGuess(api.apiQualifiedName)
+        val apiClassName = api.apiTypeElement.toClassName()
         for (metaApi in impls) {
-            if (!metaApi.isApiImpl(api.apiQualifiedName)) {
+            if (metaApi.apiTypeElement != api.apiTypeElement) {
                 continue
             }
             result.add(
                 SingleImpl(
                     apiClassName,
-                    ClassName.bestGuess(metaApi.implQualifiedName),
-                    metaApi.annotationName,
-                    metaApi.annotationVersion
+                    metaApi.implTypeElement.toClassName(),
+                    metaApi.implName,
+                    metaApi.implVersion
                 )
             )
         }

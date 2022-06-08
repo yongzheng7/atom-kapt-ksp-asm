@@ -81,7 +81,7 @@ class AapTest {
                             } catch (e: Exception) {
                                 KspLog.info("2 >> 1 $e")
                             }
-                            AapMetas(aapContext).writeTo(apiImpls)
+                            AapMetas(aapContext).addMetasCode(apiImpls).assembleCode()
                             return emptyList()
                         }
                     }
