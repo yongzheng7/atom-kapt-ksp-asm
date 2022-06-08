@@ -37,10 +37,8 @@ class AapMeta {
     val interfaceTypeMap = mutableMapOf<String, TypeElement>()
 
     private constructor(aapContext: AapContext, element: TypeElement) {
-
         val annotation = element.getAnnotation(AapImpl::class.java)
         this.aapContext = aapContext
-
         this.implTypeElement = element
         this.apiTypeElement =
             aapContext.context.elements.getTypeElement(
@@ -49,7 +47,6 @@ class AapMeta {
                     "api"
                 ).toString()
             )
-
         this.implName = annotation.name
         this.implVersion = annotation.version
         addInterface(element)

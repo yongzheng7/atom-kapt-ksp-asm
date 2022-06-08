@@ -21,34 +21,27 @@ import java.io.File
 
 class AapTest {
 
-    lateinit var rootPath: String
+    val rootPath: String = "D:\\app_git_android\\demo_asm\\test-plugin-compiler\\"
 
-    private val annotationPath: File
-        get() {
-            return File(
-                rootPath,
-                "module-annotation\\src\\main\\java\\com\\atom\\module\\annotation\\aap\\AapImpl.kt"
-            )
-        }
-
-    private val sourcePath: String
-        get() {
-            return rootPath + "compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\ksp\\aap\\data"
-        }
-
-    @Before
-    fun before() {
-        rootPath = "D:\\app_git_android\\demo_asm\\test-plugin-compiler\\"
+    private val annotationPath = lazy {
+        File(
+            rootPath,
+            "module-annotation\\src\\main\\java\\com\\atom\\module\\annotation\\aap\\AapImpl.kt"
+        )
     }
+
+    private val sourcePath =
+        lazy { rootPath + "compiler-ksp\\src\\test\\kotlin\\com\\atom\\compiler\\ksp\\aap\\data" }
+
 
     /**
      * 获取源码class文件集合
      */
     private fun getSourceFiles(): List<SourceFile> {
         val loadSourceFile =
-            SourceFile.loadSourceFile(sourcePath)
+            SourceFile.loadSourceFile(sourcePath.value)
         val sourceFiles = mutableListOf<SourceFile>()
-        sourceFiles.add(SourceFile.fromPath(annotationPath))
+        sourceFiles.add(SourceFile.fromPath(annotationPath.value))
         sourceFiles.addAll(loadSourceFile)
         return sourceFiles
     }

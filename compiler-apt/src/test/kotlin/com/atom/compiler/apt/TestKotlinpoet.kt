@@ -1,6 +1,5 @@
 package com.atom.compiler.apt
 
-import com.atom.compiler.apt.common.JavaInterfaceClass0
 import com.atom.compiler.apt.common.KotlinAnnotation
 import com.atom.compiler.apt.common.KotlinInterfaceClass0
 import com.atom.compiler.apt.common.KotlinInterfaceClass1
