@@ -12,8 +12,9 @@ object KspContext {
     val builtIns: KSBuiltIns
         get() = resolver.builtIns
 
-    fun init(environment: SymbolProcessorEnvironment, resolver: Resolver) {
+    fun init(environment: SymbolProcessorEnvironment, resolver: Resolver): KspContext {
         KspContext.environment = environment
         KspContext.resolver = resolver
+        return this
     }
 }

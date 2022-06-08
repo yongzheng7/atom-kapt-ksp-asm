@@ -1,6 +1,7 @@
 package com.atom.compiler.ksp.ext
 
 import java.io.File
+import java.lang.StringBuilder
 import java.util.regex.Pattern
 
 fun String.upperFirstLetter(): String {

@@ -4,16 +4,18 @@ import com.atom.compiler.apt.core.AptProcessor
 import com.atom.compiler.apt.core.AptContext
 import com.atom.compiler.apt.core.AptLog
 import com.atom.module.annotation.aap.AapImpl
-import com.google.auto.service.AutoService
 import javax.annotation.processing.*
 import javax.lang.model.element.TypeElement
 
-@AutoService(Processor::class)
 class AapProcessor : AptProcessor() {
     lateinit var aapContext : AapContext
     override fun initOptions(context: AptContext, options: Map<String, String>) {
         AptLog.info("AapProcessor initOptions $options")
-        aapContext = AapContext(context, options)
+        try {
+            aapContext = AapContext(context, options)
+        }catch (e : Exception){
+            AptLog.error(e)
+        }
     }
 
     override fun process(

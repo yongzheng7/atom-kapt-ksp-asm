@@ -1,6 +1,7 @@
 package com.atom.compiler.ksp.aap
 
 import com.atom.compiler.ksp.core.KspLog
+import com.atom.compiler.ksp.ext.getAnnotationValue
 import com.atom.compiler.ksp.ext.getClassCanonicalName
 import com.atom.compiler.ksp.ext.hasPublicEmptyDefaultConstructor
 import com.atom.module.annotation.aap.AapImpl
@@ -38,23 +39,18 @@ class AapMeta {
         }
         this.aapContext = aapContext
         val annotation = element.getAnnotationsByType(AapImpl::class).first()
-
         this.implTypeElement = element
         // it.value is KSTypeImpl
-        this.apiTypeElement =
-            aapContext.context.resolver.getClassDeclarationByName(
-                annotation.api.qualifiedName
-                    ?: throw AapException("annotation.api.qualifiedName is null")
-            )
-                ?: throw AapException("aapContext.context.resolver.getClassDeclarationByName(apiQualifiedName) is null")
+        val apiName = element.getAnnotationValue(AapImpl::class , "api").toString()
+        this.apiTypeElement = aapContext.context.resolver.getClassDeclarationByName(apiName)
+            ?: throw AapException("aapContext.context.resolver.getClassDeclarationByName(apiQualifiedName) is null")
         // 对应的接口的element对象
-
         this.implName = annotation.name
         this.implVersion = annotation.version
 
         addSuperType(element)
-
-        if (!superTypeMap.keys.contains(annotation.api.qualifiedName)) {
+        KspLog.info("  map > ${superTypeMap}")
+        if (!superTypeMap.keys.contains(apiName)) {
             throw AapException("[${element}] not extend and interface annotation api")
         }
     }

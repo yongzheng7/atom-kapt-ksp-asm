@@ -2,7 +2,6 @@ plugins {
     id 'java-library'
     id 'kotlin'
     id 'org.jetbrains.kotlin.jvm'
-    id "org.jetbrains.kotlin.kapt"
 }
 
 java {
@@ -21,11 +20,7 @@ dependencies {
     api "org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.3.0"
     api "com.squareup:kotlinpoet:1.11.0"
     api "com.squareup:kotlinpoet-metadata:1.11.0"
-    api "com.google.auto.service:auto-service-annotations:1.0.1"
-    kapt "com.google.auto.service:auto-service:1.0.1"
-
     api project(":module-annotation")
-
     testImplementation project(':compiler-test-ksp')
 }
 
