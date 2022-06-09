@@ -1,17 +1,16 @@
 package com.atom.compiler.ksp.ext
 
-import com.atom.compiler.ksp.core.KspLog
 import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSTypeReference
-import javax.lang.model.element.AnnotationMirror
-import javax.lang.model.element.Element
-import javax.lang.model.type.TypeMirror
 import kotlin.reflect.KClass
 
+//获取所有成员函数
+fun KSClassDeclaration.getDeclaredFunctions() =
+    declarations.filterIsInstance<KSFunctionDeclaration>()
 
 fun KSClassDeclaration.isKotlin() = extension().equals("kt", true)
 
@@ -58,9 +57,9 @@ fun KSClassDeclaration.annotationToMap(clazz: KClass<*>): Map<String, Any?> {
     val am = getAnnotation(clazz) ?: return result
     for (argument in am.arguments) {
         result[argument.name?.asString() ?: continue] = argument.value.let {
-            if(it is KSType){
+            if (it is KSType) {
                 it.declaration.qualifiedName?.asString()
-            }else{
+            } else {
                 it
             }
         }

@@ -49,7 +49,7 @@ class AapMeta {
         this.implVersion = annotation.version
 
         addSuperType(element)
-        KspLog.info("  map > ${superTypeMap}")
+
         if (!superTypeMap.keys.contains(apiName)) {
             throw AapException("[${element}] not extend and interface annotation api")
         }
@@ -67,9 +67,7 @@ class AapMeta {
         return """
 
             ----------------------------------------------------------------------------------------
-            ${this.implTypeElement.simpleName}
-            --->
-            aapContext=            $aapContext
+            ${this.implTypeElement.simpleName.asString()}
             --->
             apiTypeElement  = $apiTypeElement , apiQualifiedName = ${apiTypeElement.getClassCanonicalName()}
             implTypeElement = $implTypeElement , implQualifiedName = ${implTypeElement.getClassCanonicalName()}

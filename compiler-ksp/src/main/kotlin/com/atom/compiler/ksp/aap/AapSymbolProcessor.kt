@@ -8,30 +8,37 @@ import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.*
 import java.lang.StringBuilder
 
 
 class AapSymbolProcessor(environment: SymbolProcessorEnvironment) : KspProcessor(environment) {
 
+    class Provider : SymbolProcessorProvider{
+        override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+            return AapSymbolProcessor(environment)
+        }
+    }
+
     override fun onProcess(kspContext: KspContext): List<KSAnnotated> {
         val aapContext = AapContext(kspContext, kspContext.environment.options)
-        KspLog.info("AapSymbolProcessor Version, ${KotlinVersion.CURRENT}")
-        KspLog.info("AapSymbolProcessor Options, ${kspContext.environment.options}")
-        val apiImpls = kspContext.resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!)
-            .filterIsInstance<KSClassDeclaration>()
+        KspLog.warning("AapSymbolProcessor Version, ${KotlinVersion.CURRENT}")
+        KspLog.warning("AapSymbolProcessor Options, ${kspContext.environment.options}")
+        val apiImpls = kspContext.resolver.getSymbolsWithAnnotation(AapImpl::class.qualifiedName!!).filterIsInstance<KSClassDeclaration>()
         val result = mutableSetOf<AapMeta>()
         apiImpls.forEach {
             try {
-                AapMeta.create(aapContext, it).also { aapMeta ->
-                    KspLog.info("2 >> 0 \n $aapMeta")
-                    result.add(aapMeta)
-                }
+                result.add(AapMeta.create(aapContext, it))
             } catch (e: Exception) {
                 KspLog.error(e)
             }
         }
-        AapMetas(aapContext).addMetasCode(result).assembleCode()
+        try{
+            AapMetas(aapContext).addMetasCode(result).assembleCode()
+        }catch (e: Exception){
+            KspLog.error(e)
+        }
         return emptyList()
     }
 

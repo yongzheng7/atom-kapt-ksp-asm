@@ -60,12 +60,7 @@ class AapMetas(private val aapContext: AapContext) {
     }
 
     fun assembleCode() {
-        val builder = FileSpec.get(aapPacketName, classBuilder.build())
-        try {
-            builder.writeTo(aapContext.context.filer)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        FileSpec.get(aapPacketName, classBuilder.build()).writeTo(aapContext.context.filer)
     }
 
     private fun getImplNames(

@@ -1,5 +1,6 @@
 package com.atom.compiler.ksp.aap
 
+import com.atom.compiler.ksp.core.KspLog
 import com.atom.module.annotation.aap.AapAutoClass
 import com.atom.module.annotation.aap.AapImplEntry
 import com.squareup.kotlinpoet.*
@@ -32,7 +33,7 @@ class AapMetas(private val aapContext: AapContext) {
         )
         classBuilder.addAnnotation(
             AnnotationSpec.builder(AapAutoClass::class.java)
-                .addMember("value = [%S]", AapSymbolProcessorProvider::class.java.simpleName)
+                .addMember("value = [%S]", AapSymbolProcessor::class.java.simpleName)
                 .addMember("data = %S", formatDateValue)
                 .build()
         )
@@ -65,12 +66,8 @@ class AapMetas(private val aapContext: AapContext) {
     }
 
     fun assembleCode() {
-        val builder = FileSpec.get(aapPacketName, classBuilder.build())
-        try {
-            builder.writeTo(aapContext.context.environment.codeGenerator, false)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        FileSpec.get(aapPacketName, classBuilder.build())
+            .writeTo(aapContext.context.environment.codeGenerator, aggregating = true)
     }
 
     private fun getImplNames(
