@@ -1,15 +1,19 @@
 package com.atom.compiler.apt.aap
 
-import com.atom.compiler.apt.common.AptContext
-import com.atom.compiler.apt.common.AptLog
+import com.atom.compiler.apt.core.AptContext
+import com.atom.compiler.apt.core.AptLog
 import com.atom.compiler.apt.ext.upperFirstLetter
-import java.lang.RuntimeException
+import java.text.SimpleDateFormat
+import javax.lang.model.element.TypeElement
 
 class AapContext(val context: AptContext, options: Map<String, String>) {
 
     val moduleName: String
     val isDebug: Boolean
-    val classSet = HashSet<String>()
+    val classSet = HashSet<TypeElement>()
+
+    @Suppress("SimpleDateFormat")
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
 
     init {
         // option debug
@@ -24,5 +28,19 @@ class AapContext(val context: AptContext, options: Map<String, String>) {
             it.upperFirstLetter()
         }
     }
+
+    override fun toString(): String {
+        return """
+            
+            ----------------------------------------------------------------------------------------
+            AapContext
+            context = $context
+            moduleName = $moduleName 
+            isDebug = $isDebug 
+            classSet = $classSet
+            ----------------------------------------------------------------------------------------
+        """.trimIndent()
+    }
+
 
 }

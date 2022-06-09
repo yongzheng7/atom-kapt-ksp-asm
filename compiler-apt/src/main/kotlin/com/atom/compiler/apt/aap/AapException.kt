@@ -1,4 +1,3 @@
 package com.atom.compiler.apt.aap
 
-class AapException(message: String?) : Exception(message) {
-}
+class AapException(message: String?) : Exception(message)

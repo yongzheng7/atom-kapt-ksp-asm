@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    //id 'com.atom.plugin.clear'
+//    id 'com.atom.plugin.clear'
 
     id 'org.jetbrains.kotlin.kapt'
     id("com.google.devtools.ksp") version "1.6.10-1.0.2"
@@ -12,6 +12,7 @@ plugins {
 //    variantRun = false
 //    exclude = ['aaa', 'bbb2']
 //}
+
 android {
     compileSdk 31
 
@@ -40,6 +41,25 @@ android {
     }
 }
 
+kapt {
+    arguments {
+        arg("debug", "true")
+        arg("bundleClassname", "AppModule")
+    }
+    javacOptions {
+        // Increase the max count of errors from annotation processors.
+        // Default is 100.
+        // option("-Xmaxerrs", 500)
+    }
+    //useBuildCache = false
+    //correctErrorTypes = true
+}
+
+ksp {
+    arg("debug", "true")
+    arg("bundleClassname", "App2Module")
+}
+
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.3.2'
@@ -55,5 +75,5 @@ dependencies {
 
     implementation project(':module-annotation')
     //kapt(project(":compiler-apt"))
-    //ksp(project(":compiler-ksp"))
+    ksp(project(":compiler-ksp"))
 }

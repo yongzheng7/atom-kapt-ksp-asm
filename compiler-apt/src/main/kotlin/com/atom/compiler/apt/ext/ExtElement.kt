@@ -1,10 +1,8 @@
 package com.atom.compiler.apt.ext
 
 import java.lang.StringBuilder
-import javax.lang.model.element.ElementKind
-import javax.lang.model.element.ExecutableElement
-import javax.lang.model.element.Modifier
-import javax.lang.model.element.TypeElement
+import javax.lang.model.element.*
+import javax.lang.model.type.TypeMirror
 
 
 fun TypeElement.isPublic(): Boolean {
@@ -35,4 +33,35 @@ fun TypeElement.printString(): String {
         result.append("${enclosed.simpleName}  ${enclosed.kind}  isConstructor=${enclosed.kind == ElementKind.CONSTRUCTOR} \n")
     }
     return result.toString()
+}
+
+fun Element.getTypeAnnotationMirror(
+    clazz: Class<*>
+): AnnotationMirror? {
+    val clazzName = clazz.name
+    for (m in this.annotationMirrors) {
+        if (m.annotationType.toString() == clazzName) {
+            return m
+        }
+    }
+    return null
+}
+
+fun Element.getMyValue(clazz: Class<*>, key: String): TypeMirror? {
+    val am = getTypeAnnotationMirror(clazz) ?: return null
+    val av = am.getValue(key)
+    return if (av == null) {
+        null
+    } else {
+        av.value as TypeMirror
+    }
+}
+
+fun Element.annotationToMap(clazz: Class<*>): Map<String, TypeMirror> {
+    val result = mutableMapOf<String, TypeMirror>()
+    val am = getTypeAnnotationMirror(clazz) ?: return result
+    am.elementValues.forEach { (key, value) ->
+        result[key.simpleName.toString()] = value as TypeMirror
+    }
+    return result
 }

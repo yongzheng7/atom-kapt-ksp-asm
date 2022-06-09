@@ -21,16 +21,12 @@ import java.nio.file.Path
 import javax.annotation.processing.Processor
 import javax.tools.*
 
-data class PluginOption(val pluginId: PluginId, val optionName: OptionName, val optionValue: OptionValue)
-
-typealias PluginId = String
-typealias OptionName = String
-typealias OptionValue = String
+data class PluginOption(val pluginId: String, val optionName: String, val optionValue: String)
 
 @Suppress("MemberVisibilityCanBePrivate")
 class KotlinCompilation : AbstractKotlinCompilation<K2JVMCompilerArguments>() {
 	/** Arbitrary arguments to be passed to kapt */
-	var kaptArgs: MutableMap<OptionName, OptionValue> = mutableMapOf()
+	var kaptArgs: MutableMap<String, String> = mutableMapOf()
 
 	/** Annotation processors to be passed to kapt */
 	var annotationProcessors: List<Processor> = emptyList()
