@@ -1,17 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'com.atom.plugin.clear'
+    //id 'com.atom.plugin.clear'
 
     id 'org.jetbrains.kotlin.kapt'
     id("com.google.devtools.ksp") version "1.6.10-1.0.2"
 }
-codeClearPlugin{
-    enableUse = false
-    enableLog = false
-    variantRun = false
-    exclude = ['aaa', 'bbb2']
-}
+//codeClearPlugin{
+//    enableUse = false
+//    enableLog = false
+//    variantRun = false
+//    exclude = ['aaa', 'bbb2']
+//}
 android {
     compileSdk 31
 
@@ -54,6 +54,6 @@ dependencies {
 
 
     implementation project(':module-annotation')
-    kapt(project(":compiler-apt"))
+    //kapt(project(":compiler-apt"))
     //ksp(project(":compiler-ksp"))
 }
