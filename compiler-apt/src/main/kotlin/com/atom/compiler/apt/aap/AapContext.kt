@@ -4,7 +4,9 @@ import com.atom.compiler.apt.core.AptContext
 import com.atom.compiler.apt.core.AptLog
 import com.atom.compiler.apt.ext.upperFirstLetter
 import java.text.SimpleDateFormat
+import java.util.*
 import javax.lang.model.element.TypeElement
+import kotlin.collections.HashSet
 
 class AapContext(val context: AptContext, options: Map<String, String>) {
 
@@ -20,13 +22,14 @@ class AapContext(val context: AptContext, options: Map<String, String>) {
         isDebug = "true".equals(options[AapOptions.DEBUG_OPTION], ignoreCase = true)
         AptLog.debug = isDebug
         // option module
-        val bundleModuleName = options[AapOptions.BUNDLE_OPTION]?.also {
-            if (it.isEmpty()) throw RuntimeException(">>> module name is empty")
-        } ?: throw RuntimeException(">>> No module name")
-        moduleName = bundleModuleName.replace("[^0-9a-zA-Z_]+", "").let {
-            if (it.isEmpty()) throw RuntimeException(">>> module name is empty")
-            it.upperFirstLetter()
+        val bundleModuleName = options[AapOptions.BUNDLE_OPTION]?.let {
+            it.ifEmpty {
+                UUID.randomUUID().toString()
+            }
+        } ?: let {
+            UUID.randomUUID().toString()
         }
+        moduleName = bundleModuleName.replace("[^0-9a-zA-Z_]+", "").upperFirstLetter()
     }
 
     override fun toString(): String {

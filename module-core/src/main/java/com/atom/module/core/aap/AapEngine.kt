@@ -11,10 +11,12 @@ import com.atom.module.annotation.aap.AapImplEntry
 import com.atom.module.api.aap.AapContext
 import com.atom.module.api.aap.AapFilter
 import java.util.*
+import kotlin.reflect.KClass
+import kotlin.reflect.KClassifier
 
 object AapEngine : AapContext {
 
-    private val registerClass: MutableSet<Class<out AapImplEntry>> = HashSet<Class<out AapImplEntry>>()
+    private val registerClass: MutableSet<KClass<out AapImplEntry>> = HashSet<KClass<out AapImplEntry>>()
 
     private const val META_DATA_NAME = "com.atom.apt.proxy"
 
@@ -41,9 +43,9 @@ object AapEngine : AapContext {
         Log.e("register class ", Objects.requireNonNull(className))
         if (!TextUtils.isEmpty(className)) {
             try {
-                val clazz = Class.forName(className)
-                if (AapImplEntry::class.java.isAssignableFrom(clazz)) {
-                    registerClass.add(clazz as Class<out AapImplEntry>)
+                val clazz = Class.forName(className).kotlin
+                if (clazz.isInstance(AapImplEntry::class)) {
+                    registerClass.add(clazz as KClass<out AapImplEntry>)
                 }
             } catch (e: Exception) {
                 Log.e("register class error:$className", Objects.requireNonNull(e.localizedMessage))
