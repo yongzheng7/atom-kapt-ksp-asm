@@ -1,46 +1,34 @@
 package com.atom.module.core.aap
 
-import android.app.Application
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.text.TextUtils
 import android.util.Log
-import com.atom.module.annotation.aap.AapImpl
 import com.atom.module.annotation.aap.AapImplEntry
 import com.atom.module.api.aap.AapContext
 import com.atom.module.api.aap.AapFilter
 import java.util.*
 import kotlin.reflect.KClass
-import kotlin.reflect.KClassifier
 
 object AapEngine : AapContext {
+
+    init {
+        Log.e("MainActivity", "AapEngine init")
+        loadProxyClass()
+    }
 
     private val registerClass: MutableSet<KClass<out AapImplEntry>> = HashSet<KClass<out AapImplEntry>>()
 
     private const val META_DATA_NAME = "com.atom.apt.proxy"
 
-    private fun loadProxyClass() {}
+    private fun loadProxyClass() {
+    }
 
-    private fun loadProxyClassByManifest(application: Application) {
-        val appInfo: ApplicationInfo = try {
-            application.packageManager.getApplicationInfo(
-                application.packageName,
-                PackageManager.GET_META_DATA
-            )
-        } catch (e: PackageManager.NameNotFoundException) {
-            throw RuntimeException(e)
-        }
-        for (key in appInfo.metaData.keySet()) {
-            if (!key.startsWith(META_DATA_NAME)) {
-                continue
-            }
-            registerClass(appInfo.metaData.getString(key, null))
-        }
+    override fun toString(): String {
+        return "registerClass  $registerClass"
     }
 
     private fun registerClass(className: String) {
-        Log.e("register class ", Objects.requireNonNull(className))
+        Log.e("MainActivity", Objects.requireNonNull(className))
         if (!TextUtils.isEmpty(className)) {
             try {
                 val clazz = Class.forName(className).kotlin
@@ -48,7 +36,7 @@ object AapEngine : AapContext {
                     registerClass.add(clazz as KClass<out AapImplEntry>)
                 }
             } catch (e: Exception) {
-                Log.e("register class error:$className", Objects.requireNonNull(e.localizedMessage))
+                Log.e("MainActivity", " ${className} , error ${Objects.requireNonNull(e.localizedMessage)}")
             }
         }
     }

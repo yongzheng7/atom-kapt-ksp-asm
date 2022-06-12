@@ -1,5 +1,6 @@
 package com.atom.plugin.core.test.aap
 
+import com.android.build.api.transform.TransformInvocation
 import com.atom.plugin.core.AbstractPlugin
 import com.atom.plugin.core.Log
 import com.atom.plugin.core.ext.replaceAll
@@ -27,10 +28,10 @@ import java.util.zip.ZipEntry
  */
 class AapPlugin : AbstractPlugin<AapExtension>() {
 
-    val GENERATE_TO_CLASS_NAME = "com/atom/core/ApiImpl"
+    val GENERATE_TO_CLASS_NAME = "com/atom/module/core/aap/AapEngine"
     val GENERATE_TO_CLASS_FILE_NAME = "$GENERATE_TO_CLASS_NAME.class"
     val GENERATE_TO_METHOD_NAME = "loadProxyClass"
-    val ROUTER_CLASS_PACKAGE_NAME = "com/atom/apt/proxy"
+    val ROUTER_CLASS_PACKAGE_NAME = "com\\atom\\apt\\proxy"
     val REGISTER_METHOD_NAME = "registerClass"
 
     val scanningResultList = mutableListOf<String>()
@@ -45,13 +46,21 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
     }
 
     override fun isFilterJar(jarFile: File): Boolean {
-        return jarFile.absolutePath.contains("com.android.support")
-                || jarFile.absolutePath.contains("/android/m2repository")
+        return false
+    }
+
+    override fun canTransForm(name: String): Boolean {
+        if (name.contains("com/google/android")) return false
+        if (name.contains("androidx/constraintlayout")) return false
+        if (name.contains("androidx/core")) return false
+        if (name.contains("androidx/drawerlayout")) return false
+        if (name.contains("androidx/viewpager2")) return false
+        return super.canTransForm(name)
     }
 
     override fun transformDir(classBytes: ByteArray, classFile: File): ByteArray {
         Log.e("transformDir ${classFile.name}  ${classFile.absolutePath}")
-        if (classFile.isFile && classFile.absolutePath.startsWith(ScanSetting.ROUTER_CLASS_PACKAGE_NAME)) {
+        if (classFile.isFile && classFile.absolutePath.contains(ROUTER_CLASS_PACKAGE_NAME)) {
             Log.e("transformDir 找到指定的需要搜集的类 ${classFile.name}")
             return scanning(classBytes)
         }
@@ -59,7 +68,7 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
     }
 
     override fun transformJar(classBytes: ByteArray, entry: JarEntry, jarFile: File): ByteArray {
-        Log.e("transformJar ${entry.name}  ${jarFile.absolutePath}")
+        Log.e("transformJar ${entry.name} <|> ${jarFile.absolutePath}")
         if (GENERATE_TO_CLASS_FILE_NAME == entry.name) {
             Log.e("transformJar 找到指定的需要插入的ApiImpl类的 ${entry.name}")
             scanningInsertResultFileClass = jarFile
@@ -70,9 +79,9 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
         return classBytes
     }
 
-    override fun afterEvaluate(project: Project) {
-        super.afterEvaluate(project)
-        Log.e("afterEvaluate ${scanningInsertResultFileClass?.let { "成功" } ?: let { "失败" }}\n scanningResultList = ${scanningResultList} , \n scanningInsertResultClass = $scanningInsertResultFileClass")
+    override fun afterTransform(transformInvocation: TransformInvocation, e: AapExtension) {
+        super.afterTransform(transformInvocation, e)
+        Log.e("afterEvaluate ${scanningInsertResultFileClass?.let { "success" } ?: let { "failure" }}\n scanningResultList = ${scanningResultList} , \n scanningInsertResultClass = $scanningInsertResultFileClass")
         scanningInsertResultFileClass?.also { jarFile ->
             scanningResultList.forEach { entryInsert ->
                 Log.e("afterEvaluate entryInsert = ${entryInsert} ")
@@ -93,7 +102,7 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
                         val zipEntry = ZipEntry(entryName)
                         val inputStream = file.getInputStream(jarEntry)
                         jarOutputStream.putNextEntry(zipEntry)
-                        if (ScanSetting.GENERATE_TO_CLASS_FILE_NAME == entryName) {
+                        if (GENERATE_TO_CLASS_FILE_NAME == entryName) {
                             Log.e("afterEvaluate Insert init code to class = $entryName ")
                             val bytes = referHackWhenInit(inputStream)
                             jarOutputStream.write(bytes)
@@ -115,26 +124,30 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
         }
     }
 
+
     private fun scanning(inputArray: ByteArray): ByteArray {
         val reader = ClassReader(inputArray)
         val node = ClassNode()
         reader.accept(node, ClassReader.EXPAND_FRAMES)
         extension?.also {
+            Log.e("transformJar extension != null")
             it.registerList.forEach { entry ->
                 if (entry.isInterface()) {
                     reader.interfaces.iterator().forEach { interfaceName ->
                         if (entry.name == interfaceName) {
-                            Log.e("transformJar 找到一个 interfaceClass [${interfaceName}]的类  ${entry.name} ")
-                            scanningResultList.add(entry.name)
+                            Log.e("transformJar 找到一个 interfaceClass [${interfaceName}]的类 <|> ${entry.name} <|> ${reader.className}")
+                            scanningResultList.add(reader.className)
                         }
                     }
                 } else {
                     if (entry.name == reader.superName) {
-                        Log.e("transformJar 找到一个 superClass [${reader.superName}]的类   ${entry.name}")
-                        scanningResultList.add(entry.name)
+                        Log.e("transformJar 找到一个 superClass [${reader.superName}]的类 <|> ${entry.name} <|> ${reader.className}")
+                        scanningResultList.add(reader.className)
                     }
                 }
             }
+        } ?:also {
+            Log.e("transformJar extension == null")
         }
         val writer = ClassWriter(1)
         node.accept(writer)
@@ -161,7 +174,8 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
         ): MethodVisitor {
             var mv = super.visitMethod(access, name, descriptor, signature, exceptions)
             //generate code into this method
-            if (name == ScanSetting.GENERATE_TO_METHOD_NAME) { //找到动态生成注册代码需要注入的 loadRouterMap 方法
+            if (name == GENERATE_TO_METHOD_NAME) { //找到动态生成注册代码需要注入的 loadRouterMap 方法
+                Log.e("transformJar AapImplClassVisitor ${name}")
                 mv = AapImplMethodVisitor(Opcodes.ASM5, mv)
             }
             return mv
@@ -174,16 +188,19 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
             //generate code before return
             if ((opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN)) {
                 scanningResultList.forEach { it ->
+                    Log.e("transformJar AapImplMethodVisitor visitInsn <> ${it}")
                     val name = it.replaceAll("/", ".")  //将类文件的路径转化为包的路径
                     mv.visitLdcInsn(name) //访问方法的参数--搜索到的接口类名
                     // 生成注册代码到 LogisticsCenter.loadRouterMap() 方法中
                     mv.visitMethodInsn(
-                        Opcodes.INVOKESTATIC   //操作码
-                        , ScanSetting.GENERATE_TO_CLASS_NAME //访问类的类名
-                        , ScanSetting.REGISTER_METHOD_NAME //访问的方法
+                        // https://blog.csdn.net/kangkanglou/article/details/79422520
+                        Opcodes.INVOKESPECIAL   //操作码
+                        , GENERATE_TO_CLASS_NAME //访问类的类名
+                        , REGISTER_METHOD_NAME //访问的方法
                         , "(Ljava/lang/String;)V"   //访问参数的类型
                         , false
                     )   //访问的类是否是接口
+                    mv.visitInsn(Opcodes.POP)
                 }
             }
             super.visitInsn(opcode)

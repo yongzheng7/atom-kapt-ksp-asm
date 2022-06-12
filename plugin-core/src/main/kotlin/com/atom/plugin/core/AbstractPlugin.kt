@@ -65,7 +65,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             val extensions: ExtensionContainer = project.extensions
             val appExtension = extensions.getByType(AppExtension::class.java)
             this.isApp = appExtension is AppExtension
-            this.extension = extensions.create(getExtensionName(), getExtensionClass())
+            this.extension = extensions.create(getExtensionName(), getExtensionClass()) ?: this.getExtensionClass().newInstance()
             appExtension.registerTransform(this)
             project.afterEvaluate { p ->
                 afterEvaluate(p)
@@ -118,7 +118,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         }
     }
 
-    protected fun beforeTransform(transformInvocation: TransformInvocation, e: E) {
+    protected open fun beforeTransform(transformInvocation: TransformInvocation, e: E) {
         Log.e("-------------------------beforeTransform------------------------")
         Log.e("ProjectName  : ${project.name}")
         Log.e("ExtensionName: ${getExtensionName()}")
@@ -158,7 +158,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         executor.invokeAll(tasks)
     }
 
-    protected fun afterTransform(transformInvocation: TransformInvocation, e: E) {
+    protected open fun afterTransform(transformInvocation: TransformInvocation, e: E) {
         Log.e("-----------------------afterTransform---------------------------")
         Log.e("ProjectName  : ${project.name}")
         Log.e("Tasks        : ${tasks.size}")
@@ -218,23 +218,13 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         if (isIncremental) {
             directoryInput.changedFiles.forEach(biConsumer)
         } else {
-            eachFileRecurse(directoryInput.file, FileType.ANY) { file ->
-                Log.e("eachFileRecurse 1 ${file.absolutePath}")
+            eachFileRecurse(directoryInput.file, FileType.FILES) { file ->
+                biConsumer.accept(
+                    file,
+                    Status.ADDED
+                )
             }
-            getAllFiles(directoryInput.file)
-                .forEach(Consumer { file: File ->
-                    Log.e("eachFileRecurse 2 ${file.absolutePath}")
-                    biConsumer.accept(
-                        file,
-                        Status.ADDED
-                    )
-                })
         }
-    }
-
-    private fun getAllFiles(@NonNull dir: File): FluentIterable<File> {
-        return FluentIterable.from(Files.fileTraverser().depthFirstPreOrder(dir))
-            .filter(Files.isFile())
     }
 
     private fun eachJar(
@@ -358,6 +348,10 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         } catch (e: Throwable) {
             Log.e("weaveSingleJarToFile Throwable $e")
         }
+    }
+
+    private fun isFilterClass(entry: JarEntry): Boolean {
+        return false
     }
 
     @Throws(IOException::class)

@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-//    id 'com.atom.plugin.clear'
+    id 'com.atom.plugin.clear'
 
     id 'org.jetbrains.kotlin.kapt'
     id("com.google.devtools.ksp") version "1.6.10-1.0.2"
@@ -13,7 +13,7 @@ plugins {
 //    exclude = ['aaa', 'bbb2']
 //}
 
-def kspEnabled = true
+def kspEnabled = false
 
 android {
     compileSdk 31
@@ -91,6 +91,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation project(':module-annotation')
+    implementation project(':module-core')
 
     if (kspEnabled) {
         ksp project(":compiler-ksp")

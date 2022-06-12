@@ -7,6 +7,6 @@ open class AapExtension : AbstractExtension() {
     val registerList = arrayListOf<SuperScanSet>()
 
     init {
-        registerList.add(SuperScanSet("com/atom/annotation/bean/ApiImpls"))
+        registerList.add(SuperScanSet("com/atom/module/annotation/aap/AapImplEntry"))
     }
 }

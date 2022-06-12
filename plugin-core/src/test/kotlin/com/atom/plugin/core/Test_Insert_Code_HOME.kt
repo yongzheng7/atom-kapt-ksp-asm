@@ -1,6 +1,7 @@
 package com.atom.plugin.core
 
 import com.atom.plugin.core.ext.println
+import com.atom.plugin.core.ext.replaceAll
 import org.apache.commons.io.FileUtils
 import org.junit.Before
 import org.junit.Test
@@ -33,9 +34,13 @@ class Test_Insert_Code_HOME {
     @Before
     fun before() {
         inFile =
-            File("D:\\app_git_android\\demo_asm\\test-kapt-ksp\\app\\build\\tmp\\kotlin-classes\\debug\\com\\atom\\test\\annotation\\Demo.class")
+            File("D:\\app_git_android\\demo_asm\\test-plugin-compiler\\module-core\\build\\tmp\\kotlin-classes\\debug\\com\\atom\\module\\core\\aap\\AapEngine.class")
         outFile =
-            File("D:\\app_git_android\\demo_asm\\test-kapt-ksp\\app\\build\\tmp\\kotlin-classes\\debug\\com\\atom\\test\\annotation\\Demo2.class")
+            File("D:\\app_git_android\\demo_asm\\test-plugin-compiler\\module-core\\build\\tmp\\kotlin-classes\\debug\\com\\atom\\module\\core\\aap\\AapEngine2.class")
+
+        if(outFile.exists()){
+            outFile.delete()
+        }
     }
 
 
@@ -292,4 +297,56 @@ class Test_Insert_Code_HOME {
 //            super.visitMaxs(maxStack + 4, maxLocals)
 //        }
     }
+
+    @Test
+    fun `kotlin  添加代码到object 中 也是添加到class的实体中 和添加静态方法有区别`() {
+        val readFileToByteArray = FileUtils.readFileToByteArray(inFile)
+        val classReader = ClassReader(readFileToByteArray)
+        val classWriter = ClassWriter(classReader, 0)
+        val classVisitor: ClassVisitor = SingleClassVisitor(Opcodes.ASM5, classWriter)
+        classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
+        FileUtils.writeByteArrayToFile(outFile, classWriter.toByteArray())
+        println(" >" + outFile.absolutePath)
+    }
+
+    class SingleClassVisitor(api: Int, cv: ClassVisitor) : ClassVisitor(api, cv){
+        override fun visitMethod(
+            access: Int,
+            name: String?,
+            descriptor: String?,
+            signature: String?,
+            exceptions: Array<out String>?
+        ): MethodVisitor {
+            var mv = super.visitMethod(access, name, descriptor, signature, exceptions)
+            //generate code into this method
+            if (name == "loadProxyClass") { //找到动态生成注册代码需要注入的 loadRouterMap 方法
+                println("transformJar AapImplClassVisitor ${name}")
+                mv = SingleMethodVisitor(Opcodes.ASM5, mv)
+            }
+            return mv
+        }
+    }
+
+    class SingleMethodVisitor(api: Int, cv: MethodVisitor) : MethodVisitor(api, cv){
+        override fun visitInsn(opcode: Int) {
+            //generate code before return
+            if ((opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN)) {
+                println("transformJar SingleMethodVisitor ${opcode}")
+                // 生成注册代码到 LogisticsCenter.loadRouterMap() 方法中
+                // https://blog.csdn.net/kangkanglou/article/details/79422520
+                mv.visitCode()
+                mv.visitVarInsn(Opcodes.ALOAD, 0)
+                mv.visitLdcInsn("sdasdasdasdasdasd")
+                mv.visitMethodInsn(
+                    Opcodes.INVOKESPECIAL,
+                    "com/atom/module/core/aap/AapEngine",
+                    "registerClass",
+                    "(Ljava/lang/String;)V",
+                    false)
+
+            }
+            super.visitInsn(opcode)
+        }
+    }
+
 }
