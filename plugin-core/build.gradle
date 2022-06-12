@@ -77,7 +77,7 @@ afterEvaluate {
                 from components.java
                 groupId = 'com.atom.plugin'
                 artifactId = 'asm-plugin'
-                version = '7.0.0'
+                version = '8.0.0'
             }
         }
 

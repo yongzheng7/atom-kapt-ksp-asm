@@ -12,13 +12,16 @@ import kotlin.reflect.KClass
 object AapEngine : AapContext {
 
     init {
-        Log.e("MainActivity", "AapEngine init")
+        Log.e(
+            "MainActivity",
+            "AapEngine init >>>>>>>>>>>>>>>>>>>>>>"
+        )
         loadProxyClass()
+        Log.e("MainActivity", "AapEngine init <<<<<<<<<<<<<<<<<<<<<<")
     }
 
-    private val registerClass: MutableSet<KClass<out AapImplEntry>> = HashSet<KClass<out AapImplEntry>>()
-
-    private const val META_DATA_NAME = "com.atom.apt.proxy"
+    private val registerClass: MutableSet<KClass<out AapImplEntry>> =
+        HashSet<KClass<out AapImplEntry>>()
 
     private fun loadProxyClass() {
     }
@@ -28,7 +31,7 @@ object AapEngine : AapContext {
     }
 
     private fun registerClass(className: String) {
-        Log.e("MainActivity", Objects.requireNonNull(className))
+        Log.e("MainActivity", "className >>> $className")
         if (!TextUtils.isEmpty(className)) {
             try {
                 val clazz = Class.forName(className).kotlin
@@ -36,7 +39,10 @@ object AapEngine : AapContext {
                     registerClass.add(clazz as KClass<out AapImplEntry>)
                 }
             } catch (e: Exception) {
-                Log.e("MainActivity", " ${className} , error ${Objects.requireNonNull(e.localizedMessage)}")
+                Log.e(
+                    "MainActivity",
+                    " ${className} , error ${Objects.requireNonNull(e.localizedMessage)}"
+                )
             }
         }
     }

@@ -187,20 +187,23 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
         override fun visitInsn(opcode: Int) {
             //generate code before return
             if ((opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN)) {
-                scanningResultList.forEach { it ->
-                    Log.e("transformJar AapImplMethodVisitor visitInsn <> ${it}")
-                    val name = it.replaceAll("/", ".")  //将类文件的路径转化为包的路径
-                    mv.visitLdcInsn(name) //访问方法的参数--搜索到的接口类名
-                    // 生成注册代码到 LogisticsCenter.loadRouterMap() 方法中
-                    mv.visitMethodInsn(
+                if(scanningResultList.isNotEmpty()){
+                    mv.visitCode()
+                    scanningResultList.forEach {
+                        Log.e("transformJar AapImplMethodVisitor visitInsn <> ${it}")
+                        val name = it.replaceAll("/", ".")  //将类文件的路径转化为包的路径
+                        mv.visitVarInsn(Opcodes.ALOAD, 0)
+                        mv.visitLdcInsn(name) //访问方法的参数--搜索到的接口类名
+                        // 生成注册代码到 LogisticsCenter.loadRouterMap() 方法中
                         // https://blog.csdn.net/kangkanglou/article/details/79422520
-                        Opcodes.INVOKESPECIAL   //操作码
-                        , GENERATE_TO_CLASS_NAME //访问类的类名
-                        , REGISTER_METHOD_NAME //访问的方法
-                        , "(Ljava/lang/String;)V"   //访问参数的类型
-                        , false
-                    )   //访问的类是否是接口
-                    mv.visitInsn(Opcodes.POP)
+                        mv.visitMethodInsn(
+                            Opcodes.INVOKESPECIAL   //操作码
+                            , GENERATE_TO_CLASS_NAME //访问类的类名
+                            , REGISTER_METHOD_NAME //访问的方法
+                            , "(Ljava/lang/String;)V"   //访问参数的类型
+                            , false
+                        )   //访问的类是否是接口
+                    }
                 }
             }
             super.visitInsn(opcode)
