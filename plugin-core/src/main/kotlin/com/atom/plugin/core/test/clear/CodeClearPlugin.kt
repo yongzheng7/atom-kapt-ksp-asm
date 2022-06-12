@@ -32,7 +32,7 @@ class CodeClearPlugin : AbstractPlugin<CodeClearExtension>() {
         return CodeClearExtension::class.java
     }
 
-    override fun transform(classBytes: ByteArray, classFile: File): ByteArray {
+    override fun transformDir(classBytes: ByteArray, classFile: File): ByteArray {
         val reader = ClassReader(classBytes)
         Log.e("${getExtensionName()} transform > ${reader.className}  ${classFile.absolutePath}")
         val node = ClassNode()
@@ -48,7 +48,7 @@ class CodeClearPlugin : AbstractPlugin<CodeClearExtension>() {
     }
 
     override fun transformJar(classBytes: ByteArray, entry: JarEntry, jarFile: File): ByteArray {
-        return transform(classBytes, jarFile)
+        return transformDir(classBytes, jarFile)
     }
 
 

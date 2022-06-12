@@ -206,7 +206,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
                                     pr.mkdirs()
                                 }
                             }
-                            tasks.add(Callable<Unit> { mainSingleClassToFile(file, destFile) })
+                            tasks.add(Callable<Unit> { parseDirToFile(file, destFile) })
                             Log.e("foreach Dir > status=${status} \n inputDirPath=${srcDirPath}  outputDirPath=${destDirPath} \n inputFilePath=${file.absolutePath} outputFilePath=${destFilePath}")
                         }
                     }
@@ -269,7 +269,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
                         pr.mkdirs()
                     }
                 }
-                tasks.add(Callable<Unit> { mainSingleJarToFile(jarInput.file, dest) })
+                tasks.add(Callable<Unit> { parseJarToFile(jarInput.file, dest) })
             }
         }
         Log.e("foreach Jar status=${status} jarInput.file=${jarInput.file.absolutePath} \njarOutput.file=${dest.absolutePath} createJarOutputName = ${createJarOutputName}")
@@ -304,7 +304,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
     }
 
     @Throws(IOException::class)
-    private fun mainSingleJarToFile(inputFile: File, outputFile: File) {
+    private fun parseJarToFile(inputFile: File, outputFile: File) {
         try {
             //存在 强制删除
             if (outputFile.exists()) {
@@ -361,7 +361,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
     }
 
     @Throws(IOException::class)
-    private fun mainSingleClassToFile(inputFile: File, outputFile: File) {
+    private fun parseDirToFile(inputFile: File, outputFile: File) {
         // 判断师傅可以进行转变
         if (canTransForm(inputFile.name)) {
             //  创建文件，如果文件存在则更新时间；如果不存在，创建一个空文件
@@ -370,7 +370,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             val inputClassBytes = FileUtils.readFileToByteArray(inputFile)
             val enableUse = extension?.enableUse ?: false
             val outputClassBytes = if (enableUse) {
-                transform(inputClassBytes, inputFile)
+                transformDir(inputClassBytes, inputFile)
             } else {
                 inputClassBytes
             }
@@ -388,7 +388,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         return false
     }
 
-    abstract fun transform(classBytes: ByteArray, classFile: File): ByteArray
+    abstract fun transformDir(classBytes: ByteArray, classFile: File): ByteArray
 
     abstract fun transformJar(classBytes: ByteArray, entry: JarEntry, jarFile: File): ByteArray
 
