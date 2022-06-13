@@ -65,7 +65,8 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             val extensions: ExtensionContainer = project.extensions
             val appExtension = extensions.getByType(AppExtension::class.java)
             this.isApp = appExtension is AppExtension
-            this.extension = extensions.create(getExtensionName(), getExtensionClass()) ?: this.getExtensionClass().newInstance()
+            this.extension = extensions.create(getExtensionName(), getExtensionClass())
+                ?: this.getExtensionClass().newInstance()
             appExtension.registerTransform(this)
             project.afterEvaluate { p ->
                 afterEvaluate(p)
@@ -325,12 +326,12 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
                     outputEntryClassBytes = try {
                         val enableUse = extension?.enableUse ?: false
                         if (enableUse) {
-                            transformJar(inputEntryClassBytes, entry, inputFile)
+                            transformJar(inputEntryClassBytes, entry, inputFile, outputFile)
                         } else {
                             inputEntryClassBytes
                         }
                     } catch (e: Throwable) {
-                        Log.e("weaveSingleJarToFile error ${e}")
+                        Log.e("weaveSingleJarToFile error $e")
                         e.printStackTrace()
                         inputEntryClassBytes
                     }
@@ -364,7 +365,7 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             val inputClassBytes = FileUtils.readFileToByteArray(inputFile)
             val enableUse = extension?.enableUse ?: false
             val outputClassBytes = if (enableUse) {
-                transformDir(inputClassBytes, inputFile)
+                transformDir(inputClassBytes, inputFile, outputFile)
             } else {
                 inputClassBytes
             }
@@ -382,8 +383,17 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         return false
     }
 
-    abstract fun transformDir(classBytes: ByteArray, classFile: File): ByteArray
+    abstract fun transformDir(
+        classBytes: ByteArray,
+        inputFile: File,
+        outputFile: File
+    ): ByteArray
 
-    abstract fun transformJar(classBytes: ByteArray, entry: JarEntry, jarFile: File): ByteArray
+    abstract fun transformJar(
+        classBytes: ByteArray,
+        entry: JarEntry,
+        inputFile: File,
+        outputFile: File
+    ): ByteArray
 
 }

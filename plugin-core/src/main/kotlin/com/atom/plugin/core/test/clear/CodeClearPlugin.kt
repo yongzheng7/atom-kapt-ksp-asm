@@ -32,9 +32,9 @@ class CodeClearPlugin : AbstractPlugin<CodeClearExtension>() {
         return CodeClearExtension::class.java
     }
 
-    override fun transformDir(classBytes: ByteArray, classFile: File): ByteArray {
+    override fun transformDir(classBytes: ByteArray, inputFile: File, outputFile: File): ByteArray {
         val reader = ClassReader(classBytes)
-        Log.e("${getExtensionName()} transform > ${reader.className}  ${classFile.absolutePath}")
+        Log.e("${getExtensionName()} transform > classBytes = ${reader.className} \n inputFile = ${inputFile.absolutePath}\n outputFile = ${outputFile.absolutePath}")
         val node = ClassNode()
         reader.accept(node, ClassReader.EXPAND_FRAMES)
         if (reader.className.equals("com/atom/bytecode/MainActivity")) {
@@ -47,10 +47,14 @@ class CodeClearPlugin : AbstractPlugin<CodeClearExtension>() {
         return writer.toByteArray()
     }
 
-    override fun transformJar(classBytes: ByteArray, entry: JarEntry, jarFile: File): ByteArray {
-        return transformDir(classBytes, jarFile)
+    override fun transformJar(
+        classBytes: ByteArray,
+        entry: JarEntry,
+        inputFile: File,
+        outputFile: File
+    ): ByteArray {
+        return transformDir(classBytes, inputFile, outputFile)
     }
-
 
     private fun removeLogLabel(methodNode: MethodNode) {
         try {

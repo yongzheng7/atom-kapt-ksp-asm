@@ -58,20 +58,27 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
         return super.canTransForm(name)
     }
 
-    override fun transformDir(classBytes: ByteArray, classFile: File): ByteArray {
-        Log.e("transformDir ${classFile.name}  ${classFile.absolutePath}")
-        if (classFile.isFile && classFile.absolutePath.contains(ROUTER_CLASS_PACKAGE_NAME)) {
-            Log.e("transformDir 找到指定的需要搜集的类 ${classFile.name}")
+    override fun transformDir(classBytes: ByteArray, inputFile: File, outputFile: File): ByteArray {
+        Log.e("transformDir \n inputFile = ${inputFile.absolutePath} \n outputFile = ${inputFile.absolutePath}")
+        if (inputFile.isFile
+            && inputFile.absolutePath.contains(ROUTER_CLASS_PACKAGE_NAME)) {
+            Log.e("transformDir 找到指定的需要搜集的类 ${inputFile.name}")
             return scanning(classBytes)
         }
         return classBytes
     }
 
-    override fun transformJar(classBytes: ByteArray, entry: JarEntry, jarFile: File): ByteArray {
-        Log.e("transformJar ${entry.name} <|> ${jarFile.absolutePath}")
+    override fun transformJar(
+        classBytes: ByteArray,
+        entry: JarEntry,
+        inputFile: File,
+        outputFile: File
+    ): ByteArray {
+        Log.e("transformDir \n ${entry.name} \n inputFile = ${inputFile.absolutePath} \n outputFile = ${inputFile.absolutePath}")
+
         if (GENERATE_TO_CLASS_FILE_NAME == entry.name) {
             Log.e("transformJar 找到指定的需要插入的ApiImpl类的 ${entry.name}")
-            scanningInsertResultFileClass = jarFile
+            scanningInsertResultFileClass = outputFile
         } else if (entry.name.startsWith(ROUTER_CLASS_PACKAGE_NAME)) {
             Log.e("transformJar 找到指定的需要搜集的类 ${entry.name}")
             return scanning(classBytes)
