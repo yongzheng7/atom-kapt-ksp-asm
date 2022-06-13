@@ -13,7 +13,7 @@ plugins {
 //    exclude = ['aaa', 'bbb2']
 //}
 
-def kspEnabled = false
+def kspEnabled = true
 
 android {
     compileSdk 31

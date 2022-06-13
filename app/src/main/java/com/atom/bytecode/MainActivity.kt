@@ -16,7 +16,6 @@ class MainActivity : AppCompatActivity(), ActivityApi {
         Log.w("MainActivity", "3")
         Log.i("MainActivity", "4")
         Log.i("MainActivity", AapEngine.toString())
-
     }
 
     fun test() {
