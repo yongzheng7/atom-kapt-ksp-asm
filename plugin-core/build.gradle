@@ -30,10 +30,10 @@ dependencies {
     api 'junit:junit:4.13.2'
 }
 //
-////---------------------------publish maven-----------------------------------
-//ext {
-//    GROUP_ID = 'com.atom.plugin'
-//    ARTIFACT_ID = 'asm-plugin'
-//    VERSION_ID = '10.0.0'
-//}
-//// apply from: "../gradle/plugin-publish.gradle"
+//---------------------------publish maven-----------------------------------
+ext {
+    GROUP_ID = 'com.atom.plugin'
+    ARTIFACT_ID = 'core-plugin'
+    VERSION_ID = '2.0.0'
+}
+apply from: "../gradle/plugin-publish.gradle"

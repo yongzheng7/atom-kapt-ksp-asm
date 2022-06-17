@@ -1,24 +1,17 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.maven_dir = './repository'
     repositories {
         google()
         mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://services.gradle.org/distributions/" }
         maven {
-            url maven_dir
+            url './repository'
         }
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:7.0.3"
+        classpath "com.android.tools.build:gradle:4.2.0"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
         // my plugin
-       // classpath "com.atom.plugin:asm-plugin:10.0.0"
-       // classpath "com.atom.plugin:aap-plugin:1.0.0"
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath "com.atom.plugin:aap-plugin:1.0.0"
     }
 }
 
@@ -26,10 +19,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://services.gradle.org/distributions/" }
         maven {
-            url maven_dir
+            url "../repository" // 两个点 标识再后退
         }
     }
 }

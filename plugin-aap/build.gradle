@@ -14,8 +14,7 @@ dependencies {
     implementation gradleApi()
     implementation "com.android.tools.build:gradle-api:$gradle_version"
     implementation "com.android.tools.build:gradle:$gradle_version"
-
-    implementation project (':plugin-core')
+    implementation "com.atom.plugin:core-plugin:2.0.0"
 }
 
 //---------------------------publish maven-----------------------------------
