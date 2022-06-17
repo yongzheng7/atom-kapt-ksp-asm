@@ -1,14 +1,11 @@
 package com.atom.plugin.core
 
-import com.android.annotations.NonNull
 import com.android.build.api.transform.*
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.atom.plugin.core.ext.eachFileRecurse
-import com.google.common.collect.FluentIterable
 import com.google.common.collect.Sets
-import com.google.common.io.Files
 import groovy.io.FileType
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
@@ -382,10 +379,13 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
     }
 
     protected fun postTask(isFirst: Boolean = false, task: Callable<Unit>) {
-        if (isFirst) {
-            tasks.add(0, task)
-        } else {
-            tasks.add(task)
+        val enableUse = extension?.enableUse ?: false
+        if (enableUse) {
+            if (isFirst) {
+                tasks.add(0, task)
+            } else {
+                tasks.add(task)
+            }
         }
     }
 

@@ -17,8 +17,6 @@ abstract class AbstractExtension {
 
     var enableLog: Boolean = true
 
-    var variantRun: Boolean = true
-
     var runSingle: Boolean = false
 
     var include: Array<String>? = null
@@ -26,6 +24,6 @@ abstract class AbstractExtension {
     var exclude: Array<String>? = null
 
     override fun toString(): String {
-        return "AbstractExtension(enableUse=$enableUse, enableLog=$enableLog, variantRun=$variantRun, runSingle=$runSingle, include=${include?.printString()}, exclude=${exclude?.printString()})"
+        return "AbstractExtension(enableUse=$enableUse, enableLog=$enableLog, runSingle=$runSingle, include=${include?.printString()}, exclude=${exclude?.printString()})"
     }
 }

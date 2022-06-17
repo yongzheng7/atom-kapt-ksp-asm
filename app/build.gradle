@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'com.atom.plugin.clear'
+    //id 'com.atom.plugin.clear'
 
     id 'org.jetbrains.kotlin.kapt'
     id("com.google.devtools.ksp") version "1.6.10-1.0.2"
@@ -9,8 +9,12 @@ plugins {
 //codeClearPlugin{
 //    enableUse = false
 //    enableLog = false
-//    variantRun = false
 //    exclude = ['aaa', 'bbb2']
+//}
+
+//AapPlugin{
+//    enableUse = false
+//    enableLog = false
 //}
 
 def kspEnabled = true

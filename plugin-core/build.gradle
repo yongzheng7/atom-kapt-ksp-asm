@@ -1,7 +1,6 @@
 plugins {
     id 'java-library'
     id 'kotlin'
-    id 'maven-publish'
 }
 
 java {
@@ -10,12 +9,19 @@ java {
 }
 
 dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     def gradle_version = "4.2.0"
 
-    //implementation "org.gradle:gradle-api:6.7.1"
-    api gradleApi()
-    api "com.android.tools.build:gradle-api:$gradle_version"
-    api "com.android.tools.build:gradle:$gradle_version"
+    implementation gradleApi()
+    implementation "com.android.tools.build:gradle-api:$gradle_version"
+    implementation "com.android.tools.build:gradle:$gradle_version"
+
+    def asm_version = "9.2"
+    api "org.ow2.asm:asm:$asm_version"
+    api "org.ow2.asm:asm-tree:$asm_version"
+    api "org.ow2.asm:asm-util:$asm_version"
+    api "org.ow2.asm:asm-analysis:$asm_version"
+    api "org.ow2.asm:asm-commons:$asm_version"
 
     api 'commons-io:commons-io:2.6'
     api "commons-codec:commons-codec:1.15"
@@ -23,85 +29,11 @@ dependencies {
     api 'org.mockito:mockito-core:4.2.0'
     api 'junit:junit:4.13.2'
 }
-
-//---------------------------publish maven-----------------------------------
-
-javadoc {
-    options {
-        encoding "UTF-8"
-        charSet 'UTF-8'
-        author true
-        version true
-        links "http://docs.oracle.com/javase/8/docs/api"
-    }
-}
-
-// 制作文档(Javadoc)
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-// 指定编码
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
-
-tasks.withType(Javadoc) {
-    options.encoding = 'UTF-8'
-}
-
-task sourceJar(type: Jar) {
-    if (hasAndroidPlugin()) {
-        println "======> Android"
-        from android.sourceSets.main.java.srcDirs
-        //noinspection GroovyAccessibility
-        archiveClassifier = 'sources'
-    } else if (hasJavaPlugin()) {
-        println "======> Java"
-        from sourceSets.main.allSource
-        //noinspection GroovyAccessibility
-        archiveClassifier = 'sources'
-    }
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.java
-                groupId = 'com.atom.plugin'
-                artifactId = 'asm-plugin'
-                version = '9.0.0'
-            }
-        }
-
-        repositories {
-            maven {
-                allowInsecureProtocol true
-                name = "nexus" //可选
-                url = '../repository'
-            }
-        }
-    }
-}
-
-
-def hasJavaPlugin() {
-    if (plugins.hasPlugin("java-library")) {
-        return true
-    }
-    return false
-}
-
-def hasAndroidPlugin() {
-    if (plugins.hasPlugin("com.android.library")) {
-        return true
-    }
-    return false
-}
+//
+////---------------------------publish maven-----------------------------------
+//ext {
+//    GROUP_ID = 'com.atom.plugin'
+//    ARTIFACT_ID = 'asm-plugin'
+//    VERSION_ID = '10.0.0'
+//}
+//// apply from: "../gradle/plugin-publish.gradle"
