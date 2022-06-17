@@ -26,7 +26,12 @@ class AapProcessor : AptProcessor() {
         if (annotations.isNullOrEmpty()) {
             return false
         }
-        if (roundEnv == null || roundEnv.processingOver()) {
+        if (roundEnv == null) {
+            return false
+        }
+        if (roundEnv.processingOver()) {
+            // TODO 可以在这里边进行最终的代码生成
+            AptLog.info("process processingOver")
             return false
         }
         //遍历所有的class类,筛选出指定索引标注的类

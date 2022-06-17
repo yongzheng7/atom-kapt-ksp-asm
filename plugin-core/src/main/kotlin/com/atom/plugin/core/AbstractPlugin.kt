@@ -53,10 +53,9 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
 
     abstract fun getExtensionClass(): Class<E>
 
-    // 1
     override fun apply(project: Project) {
         Log.init(project)
-        Log.e("${getExtensionName()} apply ${Date()}")
+        Log.e("Apply ${getExtensionName()} \nDate ${Date()}")
         this.project = project
         val plugins: PluginContainer = project.plugins
         // 主要是负责检查当前的plugin是否在android环境使用
@@ -74,9 +73,8 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         }
     }
 
-    // 2
     open fun afterEvaluate(project: Project) {
-        Log.e("afterEvaluate ${getExtensionName()} java version = ${System.getProperty("java.version")}")
+        Log.e("AfterEvaluate ${getExtensionName()} \njava version = ${System.getProperty("java.version")} \nextension = ${extension}")
     }
 
     override fun getName(): String = getExtensionName()
@@ -94,7 +92,6 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
 
     override fun isIncremental(): Boolean = true
 
-    // 3
     override fun transform(transformInvocation: TransformInvocation?) {
         super.transform(transformInvocation)
         Log.e("${getExtensionName()} transform ${transformInvocation.toString()}")
@@ -156,7 +153,12 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
                 )
             }
         }
+        onRunTransform(transformInvocation)
         executor.invokeAll(tasks)
+    }
+
+    protected open fun onRunTransform(transformInvocation: TransformInvocation) {
+
     }
 
     protected open fun afterTransform(transformInvocation: TransformInvocation, e: E) {
@@ -376,6 +378,14 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
                 FileUtils.touch(outputFile)
                 FileUtils.copyFile(inputFile, outputFile)
             }
+        }
+    }
+
+    protected fun postTask(isFirst: Boolean = false, task: Callable<Unit>) {
+        if (isFirst) {
+            tasks.add(0, task)
+        } else {
+            tasks.add(task)
         }
     }
 

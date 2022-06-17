@@ -12,10 +12,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.*
+import java.util.concurrent.Callable
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.zip.ZipEntry
+import javax.security.auth.callback.Callback
 
 /**
  * All rights Reserved, Designed By www.rongdasoft.com
@@ -86,51 +88,52 @@ class AapPlugin : AbstractPlugin<AapExtension>() {
         return classBytes
     }
 
-    override fun afterTransform(transformInvocation: TransformInvocation, e: AapExtension) {
-        super.afterTransform(transformInvocation, e)
-        Log.e("afterEvaluate ${scanningInsertResultFileClass?.let { "success" } ?: let { "failure" }}\n scanningResultList = ${scanningResultList} , \n scanningInsertResultClass = $scanningInsertResultFileClass")
-        scanningInsertResultFileClass?.also { jarFile ->
-            scanningResultList.forEach { entryInsert ->
-                Log.e("afterEvaluate entryInsert = ${entryInsert} ")
-            }
-            extension?.also {
-                if (jarFile.name.endsWith(".jar")) {
-                    val optJar = File(jarFile.parent, jarFile.name + ".opt")
-                    if (optJar.exists()) {
-                        optJar.delete()
-                    }
-                    val file = JarFile(jarFile)
-                    var enumeration = file.entries()
-                    val jarOutputStream = JarOutputStream(FileOutputStream(optJar))
-                    //遍历jar包，找到 LogisticsCenter.class 文件
-                    while (enumeration.hasMoreElements()) {
-                        var jarEntry = enumeration.nextElement()
-                        val entryName = jarEntry.name
-                        val zipEntry = ZipEntry(entryName)
-                        val inputStream = file.getInputStream(jarEntry)
-                        jarOutputStream.putNextEntry(zipEntry)
-                        if (GENERATE_TO_CLASS_FILE_NAME == entryName) {
-                            Log.e("afterEvaluate Insert init code to class = $entryName ")
-                            val bytes = referHackWhenInit(inputStream)
-                            jarOutputStream.write(bytes)
-                        } else {
-                            jarOutputStream.write(IOUtils.toByteArray(inputStream))
+    override fun onRunTransform(transformInvocation: TransformInvocation) {
+        super.onRunTransform(transformInvocation)
+        postTask{
+            Log.e("afterEvaluate ${scanningInsertResultFileClass?.let { "success" } ?: let { "failure" }}\n scanningResultList = ${scanningResultList} , \n scanningInsertResultClass = $scanningInsertResultFileClass")
+            scanningInsertResultFileClass?.also { jarFile ->
+                scanningResultList.forEach { entryInsert ->
+                    Log.e("afterEvaluate entryInsert = ${entryInsert} ")
+                }
+                extension?.also {
+                    if (jarFile.name.endsWith(".jar")) {
+                        val optJar = File(jarFile.parent, jarFile.name + ".opt")
+                        if (optJar.exists()) {
+                            optJar.delete()
                         }
-                        inputStream.close()
-                        jarOutputStream.closeEntry()
-                    }
-                    jarOutputStream.close()
-                    file.close()
+                        val file = JarFile(jarFile)
+                        var enumeration = file.entries()
+                        val jarOutputStream = JarOutputStream(FileOutputStream(optJar))
+                        //遍历jar包，找到 LogisticsCenter.class 文件
+                        while (enumeration.hasMoreElements()) {
+                            var jarEntry = enumeration.nextElement()
+                            val entryName = jarEntry.name
+                            val zipEntry = ZipEntry(entryName)
+                            val inputStream = file.getInputStream(jarEntry)
+                            jarOutputStream.putNextEntry(zipEntry)
+                            if (GENERATE_TO_CLASS_FILE_NAME == entryName) {
+                                Log.e("afterEvaluate Insert init code to class = $entryName ")
+                                val bytes = referHackWhenInit(inputStream)
+                                jarOutputStream.write(bytes)
+                            } else {
+                                jarOutputStream.write(IOUtils.toByteArray(inputStream))
+                            }
+                            inputStream.close()
+                            jarOutputStream.closeEntry()
+                        }
+                        jarOutputStream.close()
+                        file.close()
 
-                    if (jarFile.exists()) {
-                        jarFile.delete()
+                        if (jarFile.exists()) {
+                            jarFile.delete()
+                        }
+                        optJar.renameTo(jarFile)
                     }
-                    optJar.renameTo(jarFile)
                 }
             }
         }
     }
-
 
     private fun scanning(inputArray: ByteArray): ByteArray {
         val reader = ClassReader(inputArray)
