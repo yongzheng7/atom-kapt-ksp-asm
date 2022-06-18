@@ -99,7 +99,7 @@ class ClassRewriter {
     }
 
     fun transformClassFile(from: File?, to: File): Boolean {
-        var result: Boolean
+        var result = false
         val toParent: File = to.getParentFile()
         toParent.mkdirs()
         try {

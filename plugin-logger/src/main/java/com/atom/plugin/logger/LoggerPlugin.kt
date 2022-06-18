@@ -6,8 +6,8 @@ import com.atom.plugin.core.Log
 import com.atom.plugin.logger.ReflectUtil.findField
 import com.atom.plugin.logger.ReflectUtil.getMethod
 import com.atom.plugin.logger.compile.AutotrackBuildException
-import com.atom.plugin.logger.compile.AutotrackTransform
 import com.atom.plugin.logger.compile.ClassRewriter
+import com.sun.org.apache.xpath.internal.operations.Bool
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
@@ -23,6 +23,11 @@ import java.util.regex.Pattern
 
 
 class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
+
+    companion object {
+        val sdkName = "androidx.core:core-ktx"
+    }
+
     override fun getExtensionClass(): Class<LoggerExtension> {
         return LoggerExtension::class.java
     }
@@ -35,11 +40,11 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         return classBytes
     }
 
-    override fun afterEvaluate(project: Project) {
-        super.afterEvaluate(project)
+    override fun afterEvaluate(project: Project, app: AppExtension) {
+        super.afterEvaluate(project, app)
         checkJavaVersion()
-        checkAutotrackDependency(project);
-       // onGotAndroidJarFiles(android);
+        Log.e("checkLoggerDependency > ${checkLoggerDependency(project)}")
+        Log.e("onGotAndroidJarFiles > ${onGotAndroidJarFiles(app)}")
     }
 
     override fun transformJar(
@@ -69,33 +74,53 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         Log.e("GIO: check java version failed")
     }
 
-    private fun checkAutotrackDependency(project: Project) {
+
+    private fun checkLoggerDependency(project: Project): Boolean {
         for (configuration in project.configurations) {
+            //checkAutotrackDependency configuration = releaseRuntimeOnly
+            //Log.e("checkAutotrackDependency configuration = ${configuration.name}")
             if ("releaseRuntimeClasspath" == configuration.name) {
+                Log.e("releaseRuntimeClasspath plugin version = ${getPluginVersion()}")
                 for (dependency in configuration.incoming.resolutionResult.root.dependencies) {
-                    if (findAutotrackDependency(dependency)) {
-                        return
+                    /**
+                     * checkAutotrackDependency dependency =project :module-core
+                     * from = project :app
+                     * getRequested = project :module-core
+                     * getRequested.displayName = project :module-core
+                     */
+                    val bb: (DependencyResult) -> Boolean = { sdk ->
+                        Log.e("checkAutotrackDependency ->\n dependency =${sdk} \n from = ${sdk.from} \n getRequested = ${sdk.getRequested()}")
+                        (getSdkName(sdk).startsWith(sdkName)).also {
+                            if (it) {
+                                Log.e("checkAutotrackDependency ->找到依赖了")
+                            }
+                        } && (getSdkVersion(sdk) == "1.3.0").also {
+                            if (it) {
+                                Log.e("checkAutotrackDependency ->找到版本了")
+                            } else {
+                                Log.e("checkAutotrackDependency ->找到版本了")
+                            }
+                        }
+                    }
+                    if (checkDependency(dependency, bb)) {
+                        return true
                     }
                 }
             }
         }
-        throw java.lang.RuntimeException("未发现autotrack依赖，请参考官方文档添加依赖")
+        return false
     }
 
-    private fun findAutotrackDependency(dependency: DependencyResult): Boolean {
-        val autotrackDependency = "com.growingio.android:autotracker-core:"
-        if (dependency.getRequested().getDisplayName().startsWith(autotrackDependency)) {
-            val sdkVersion: String = dependency.getRequested().getDisplayName().split(":").get(2)
-            val pluginVersion: String = getPluginVersion()
-            return if (sdkVersion == pluginVersion) {
-                true
-            } else {
-                throw AutotrackBuildException("您的autotracker-gradle-plugin版本号[$pluginVersion]和autotracker版本号[$sdkVersion]不一致，请在build.gradle文件中修改")
-            }
+    private fun checkDependency(
+        dependency: DependencyResult,
+        block: (DependencyResult) -> Boolean
+    ): Boolean {
+        if (block.invoke(dependency)) {
+            return true
         }
         if (dependency is ResolvedDependencyResult) {
-            for (result in (dependency as ResolvedDependencyResult).selected.dependencies) {
-                if (findAutotrackDependency(result)) {
+            for (result in dependency.selected.dependencies) {
+                if (checkDependency(result, block)) {
                     return true
                 }
             }
@@ -105,24 +130,32 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
 
     fun getPluginVersion(): String {
         try {
-            val jarPath: String = URLDecoder.decode(File(ClassRewriter::class.java.protectionDomain.codeSource.location.path).canonicalPath)
+            val jarPath: String =
+                URLDecoder.decode(File(ClassRewriter::class.java.protectionDomain.codeSource.location.path).canonicalPath)
             JarInputStream(FileInputStream(jarPath)).use { inputStream ->
+                Log.e("getPluginVersion ${jarPath} ,  ${inputStream.manifest.mainAttributes}")
                 return inputStream.manifest.mainAttributes
                     .getValue("Gradle-Plugin-Version")
-                    ?: throw AutotrackBuildException("Cannot find GrowingIO autotrack gradle plugin version")
+                    ?: "Cannot find GrowingIO autotrack gradle plugin version"
             }
         } catch (e: IOException) {
+            Log.e("getPluginVersion error ${e}")
             throw AutotrackBuildException("Cannot find GrowingIO autotrack gradle plugin version")
         }
     }
 
-    private fun onGotAndroidJarFiles(appExtension: AppExtension):List<URL> {
+    fun getSdkVersion(sdk: DependencyResult): String {
+        return getSdkName(sdk).split(":")[2]
+    }
+
+    fun getSdkName(sdk: DependencyResult): String {
+        return sdk.requested.displayName
+    }
+
+    private fun onGotAndroidJarFiles(appExtension: AppExtension): List<URL> {
         checkJackStatus(appExtension)
         try {
             val files = appExtension.bootClasspath
-            if (files.isEmpty()) {
-                throw java.lang.RuntimeException("GIO: get android.jar failed")
-            }
             val androidJars: MutableList<URL> = ArrayList()
             for (file in files) {
                 androidJars.add(file.toURL())

@@ -60,15 +60,15 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         val hasAppPlugin: Boolean = plugins.hasPlugin(AppPlugin::class.java)
         hasAppPlugin.isTrue {
             val extensions: ExtensionContainer = project.extensions
-            val byType = extensions.getByType(BaseExtension::class.java)
-            Log.e("hasAppPlugin  ${byType} , ${byType.javaClass.canonicalName} , ${byType is AppExtension}")
-            val appExtension = extensions.getByType(AppExtension::class.java)
+            val appExtension = extensions.getByType(BaseExtension::class.java)
             this.isApp = appExtension is AppExtension
             this.extension = extensions.create(getExtensionName(), getExtensionClass())
                 ?: this.getExtensionClass().newInstance()
             appExtension.registerTransform(this)
             project.afterEvaluate { p ->
-                afterEvaluate(p, appExtension)
+                if(appExtension is AppExtension){
+                    afterEvaluate(p, appExtension)
+                }
             }
         }
     }
