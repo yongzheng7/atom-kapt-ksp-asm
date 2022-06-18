@@ -20,7 +20,7 @@ plugins {
 //    enableLog = false
 //}
 
-def kspEnabled = true
+def kspEnabled = false
 
 android {
     compileSdk 31
@@ -30,7 +30,7 @@ android {
         minSdk 21
         targetSdk 31
         versionCode 1
-        versionName "1.0"
+        versionName "3.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

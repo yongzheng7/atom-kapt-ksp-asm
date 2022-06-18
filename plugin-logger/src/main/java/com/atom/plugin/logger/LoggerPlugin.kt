@@ -42,9 +42,9 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
 
     override fun afterEvaluate(project: Project, app: AppExtension) {
         super.afterEvaluate(project, app)
-        checkJavaVersion()
-        Log.e("checkLoggerDependency > ${checkLoggerDependency(project)}")
-        Log.e("onGotAndroidJarFiles > ${onGotAndroidJarFiles(app)}")
+        Log.e("checkLoggerDependency 0> ${getPluginVersion()}")
+        Log.e("checkLoggerDependency 1> ${checkLoggerDependency(project)}")
+        Log.e("onGotAndroidJarFiles 2> ${onGotAndroidJarFiles(app)}")
     }
 
     override fun transformJar(
@@ -80,7 +80,7 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             //checkAutotrackDependency configuration = releaseRuntimeOnly
             //Log.e("checkAutotrackDependency configuration = ${configuration.name}")
             if ("releaseRuntimeClasspath" == configuration.name) {
-                Log.e("releaseRuntimeClasspath plugin version = ${getPluginVersion()}")
+                Log.e("releaseRuntimeClasspath plugin version = ")
                 for (dependency in configuration.incoming.resolutionResult.root.dependencies) {
                     /**
                      * checkAutotrackDependency dependency =project :module-core
@@ -89,16 +89,16 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
                      * getRequested.displayName = project :module-core
                      */
                     val bb: (DependencyResult) -> Boolean = { sdk ->
-                        Log.e("checkAutotrackDependency ->\n dependency =${sdk} \n from = ${sdk.from} \n getRequested = ${sdk.getRequested()}")
+                        //Log.e("checkAutotrackDependency ->\n dependency =${sdk} \n from = ${sdk.from} \n getRequested = ${sdk.getRequested()}")
                         (getSdkName(sdk).startsWith(sdkName)).also {
                             if (it) {
                                 Log.e("checkAutotrackDependency ->找到依赖了")
                             }
                         } && (getSdkVersion(sdk) == "1.3.0").also {
                             if (it) {
-                                Log.e("checkAutotrackDependency ->找到版本了")
+                                Log.e("checkAutotrackDependency ->版本正确")
                             } else {
-                                Log.e("checkAutotrackDependency ->找到版本了")
+                                Log.e("checkAutotrackDependency ->版本错误")
                             }
                         }
                     }
@@ -134,13 +134,16 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
                 URLDecoder.decode(File(ClassRewriter::class.java.protectionDomain.codeSource.location.path).canonicalPath)
             JarInputStream(FileInputStream(jarPath)).use { inputStream ->
                 Log.e("getPluginVersion ${jarPath} ,  ${inputStream.manifest.mainAttributes}")
+                inputStream.manifest.mainAttributes.forEach { t, u ->
+                    Log.e("getPluginVersion ${t} ,  ${u}")
+                }
                 return inputStream.manifest.mainAttributes
                     .getValue("Gradle-Plugin-Version")
                     ?: "Cannot find GrowingIO autotrack gradle plugin version"
             }
         } catch (e: IOException) {
             Log.e("getPluginVersion error ${e}")
-            throw AutotrackBuildException("Cannot find GrowingIO autotrack gradle plugin version")
+            return "Cannot find GrowingIO autotrack gradle plugin version"
         }
     }
 
@@ -153,7 +156,7 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
     }
 
     private fun onGotAndroidJarFiles(appExtension: AppExtension): List<URL> {
-        checkJackStatus(appExtension)
+        //checkJackStatus(appExtension)
         try {
             val files = appExtension.bootClasspath
             val androidJars: MutableList<URL> = ArrayList()
@@ -183,7 +186,6 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             val jackEnabled = isEnable.invoke(jackOptions) as Boolean
             if (jackEnabled) {
                 errorMessage = """
-                
                 ========= GIO无埋点SDK不支持Jack编译器
                 ========= 由于TransformApi不支持Jack编译器且Jack项目已被Google废弃。请确保没有以下配置:
                 ========= jackOptions {

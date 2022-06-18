@@ -211,6 +211,11 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
                             }
                             tasks.add(Callable<Unit> { parseDirToFile(file, destFile) })
                             Log.e("foreach Dir > status=${status} \n inputDirPath=${srcDirPath}  outputDirPath=${destDirPath} \n inputFilePath=${file.absolutePath} outputFilePath=${destFilePath}")
+                            /**
+                             * logE :foreach Dir > status=ADDED
+                            inputDirPath=D:\app_git_android\demo_asm\test-plugin-compiler\app\build\tmp\kotlin-classes\debug  outputDirPath=D:\app_git_android\demo_asm\test-plugin-compiler\app\build\intermediates\transforms\LoggerPlugin\debug\53
+                            inputFilePath=D:\app_git_android\demo_asm\test-plugin-compiler\app\build\tmp\kotlin-classes\debug\META-INF\app_debug.kotlin_module outputFilePath=D:\app_git_android\demo_asm\test-plugin-compiler\app\build\intermediates\transforms\LoggerPlugin\debug\53\META-INF\app_debug.kotlin_module
+                             */
                         }
                     }
                 } catch (e: IOException) {
@@ -266,6 +271,10 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
             }
         }
         Log.e("foreach Jar status=${status} jarInput.file=${jarInput.file.absolutePath} \njarOutput.file=${dest.absolutePath} createJarOutputName = ${createJarOutputName}")
+        /**
+         * foreach Jar status=ADDED jarInput.file=D:\app_git_android\demo_asm\test-plugin-compiler\app\build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\debug\R.jar
+           jarOutput.file=D:\app_git_android\demo_asm\test-plugin-compiler\app\build\intermediates\transforms\LoggerPlugin\debug\51.jar createJarOutputName = d5a6580431f32e0db98b034338193c9dd0c9bc84_71427c02962ff978bdfd006aadf0dcae
+         */
     }
 
     private fun createJarOutputName(input: JarInput): String {
