@@ -6,7 +6,8 @@ plugins {
     id("com.google.devtools.ksp") version "1.6.10-1.0.2"
 
 
-    id 'aap-plugin'
+    //id 'aap-plugin'
+    id 'logger-plugin'
 }
 //codeClearPlugin{
 //    enableUse = false

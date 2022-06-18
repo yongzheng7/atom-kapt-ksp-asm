@@ -11,6 +11,7 @@ import com.atom.plugin.core.ext.printString
  * @date: 2022/3/15
  * @Copyright: 2022/3/15 www.rongdasoft.com Inc. All rights reserved.
  */
+// TODO 继承该类的子类 一律都需要设置为public 或者 kotlin里的 open
 abstract class AbstractExtension {
 
     var enableUse: Boolean = true

@@ -1,7 +1,8 @@
 plugins {
     id 'java-library'
-    id 'kotlin'
+    id 'org.jetbrains.kotlin.jvm'
 }
+
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -9,31 +10,18 @@ java {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     def gradle_version = "4.2.0"
 
     implementation gradleApi()
     implementation "com.android.tools.build:gradle-api:$gradle_version"
     implementation "com.android.tools.build:gradle:$gradle_version"
-
-    def asm_version = "9.2"
-    api "org.ow2.asm:asm:$asm_version"
-    api "org.ow2.asm:asm-tree:$asm_version"
-    api "org.ow2.asm:asm-util:$asm_version"
-    api "org.ow2.asm:asm-analysis:$asm_version"
-    api "org.ow2.asm:asm-commons:$asm_version"
-
-    api 'commons-io:commons-io:2.6'
-    api "commons-codec:commons-codec:1.15"
-
-    api 'org.mockito:mockito-core:4.2.0'
-    api 'junit:junit:4.13.2'
+    implementation "com.atom.plugin:core-plugin:2.0.0"
 }
-//
+
 //---------------------------publish maven-----------------------------------
 ext {
     GROUP_ID = 'com.atom.plugin'
-    ARTIFACT_ID = 'core-plugin'
+    ARTIFACT_ID = 'logger-plugin'
     VERSION_ID = '3.0.0'
 }
 apply from: "../gradle/plugin-publish.gradle"

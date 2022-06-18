@@ -3,6 +3,7 @@ package com.atom.plugin.core
 import com.android.build.api.transform.*
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.atom.plugin.core.ext.eachFileRecurse
 import com.google.common.collect.Sets
@@ -59,18 +60,20 @@ abstract class AbstractPlugin<E : AbstractExtension> : Transform(), Plugin<Proje
         val hasAppPlugin: Boolean = plugins.hasPlugin(AppPlugin::class.java)
         hasAppPlugin.isTrue {
             val extensions: ExtensionContainer = project.extensions
+            val byType = extensions.getByType(BaseExtension::class.java)
+            Log.e("hasAppPlugin  ${byType} , ${byType.javaClass.canonicalName} , ${byType is AppExtension}")
             val appExtension = extensions.getByType(AppExtension::class.java)
             this.isApp = appExtension is AppExtension
             this.extension = extensions.create(getExtensionName(), getExtensionClass())
                 ?: this.getExtensionClass().newInstance()
             appExtension.registerTransform(this)
             project.afterEvaluate { p ->
-                afterEvaluate(p)
+                afterEvaluate(p, appExtension)
             }
         }
     }
 
-    open fun afterEvaluate(project: Project) {
+    open fun afterEvaluate(project: Project, app: AppExtension) {
         Log.e("AfterEvaluate ${getExtensionName()} \njava version = ${System.getProperty("java.version")} \nextension = ${extension}")
     }
 
