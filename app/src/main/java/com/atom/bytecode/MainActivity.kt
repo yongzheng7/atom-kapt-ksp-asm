@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import com.atom.module.annotation.aap.AapImpl
 import com.atom.module.core.aap.AapEngine
+import com.atom.module.logger.Logger
 
 @AapImpl(api = ActivityApi::class, name = "adsdasdad", version = 44444)
 class MainActivity : AppCompatActivity(), ActivityApi {
@@ -16,12 +17,10 @@ class MainActivity : AppCompatActivity(), ActivityApi {
         Log.w("MainActivity", "3")
         Log.i("MainActivity", "4")
         Log.i("MainActivity", AapEngine.toString())
+        test()
     }
 
     fun test() {
-        Log.i("MainActivity", "4")
-        Log.w("MainActivity", "3")
-        Log.d("MainActivity", "2")
-        Log.e("MainActivity", "1")
+        Logger.i("asdasdad","asdasd")
     }
 }

@@ -40,9 +40,7 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
     }
 
     override fun afterEvaluate(project: Project, app: AppExtension) {
-        if (checkLoggerDependency(project)) {
-            this.extension?.enableUse = false
-        }
+        this.extension?.enableUse = checkLoggerDependency(project)
         super.afterEvaluate(project, app)
     }
 
@@ -60,10 +58,16 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             if (!ext.enableUse) {
                 return classBytes
             }
+            if(!inputFile.absolutePath.contains("com\\atom\\bytecode")){
+                return classBytes
+            }
+            Log.e("${getExtensionName()} absolutePath = ${inputFile.absolutePath} ")
             val reader = ClassReader(classBytes)
             val writer = ClassWriter(1)
-            Log.e("${getExtensionName()} className = ${reader.className} ")
-            reader.accept(HookClassVisitor(reader.className, Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES)
+            reader.accept(
+                HookClassVisitor(reader.className, Opcodes.ASM5, writer),
+                ClassReader.EXPAND_FRAMES
+            )
             writer.toByteArray()
         } ?: classBytes
     }
@@ -221,6 +225,7 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             signature: String?,
             exceptions: Array<out String>?
         ): MethodVisitor {
+            Log.e("HookClassVisitor visitMethod  , access =${access} ,name= ${name}  ,descriptor =${descriptor} ,signature= ${signature} ,exceptions= ${ exceptions} ")
             val visitMethod = super.visitMethod(access, name, descriptor, signature, exceptions)
             name ?: return visitMethod
             if (name == "<init>") return visitMethod

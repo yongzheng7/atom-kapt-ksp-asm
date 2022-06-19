@@ -22,6 +22,6 @@ dependencies {
 ext {
     GROUP_ID = 'com.atom.plugin'
     ARTIFACT_ID = 'logger-plugin'
-    VERSION_ID = '4.0.0'
+    VERSION_ID = '7.0.0'
 }
 apply from: "../gradle/plugin-publish.gradle"
