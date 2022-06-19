@@ -11,6 +11,8 @@ import com.sun.org.apache.xpath.internal.operations.Bool
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.objectweb.asm.*
+import org.objectweb.asm.tree.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -25,7 +27,8 @@ import java.util.regex.Pattern
 class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
 
     companion object {
-        val sdkName = "androidx.core:core-ktx"
+        const val sdkName = "io.github.yongzheng7:module-logger"
+        const val sdkVersion = "7.0.2"
     }
 
     override fun getExtensionClass(): Class<LoggerExtension> {
@@ -36,15 +39,11 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         return this.javaClass.simpleName
     }
 
-    override fun transformDir(classBytes: ByteArray, inputFile: File, outputFile: File): ByteArray {
-        return classBytes
-    }
-
     override fun afterEvaluate(project: Project, app: AppExtension) {
+        if (checkLoggerDependency(project)) {
+            this.extension?.enableUse = false
+        }
         super.afterEvaluate(project, app)
-        Log.e("checkLoggerDependency 0> ${getPluginVersion()}")
-        Log.e("checkLoggerDependency 1> ${checkLoggerDependency(project)}")
-        Log.e("onGotAndroidJarFiles 2> ${onGotAndroidJarFiles(app)}")
     }
 
     override fun transformJar(
@@ -53,27 +52,21 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         inputFile: File,
         outputFile: File
     ): ByteArray {
-        return classBytes
+        return transformDir(classBytes, inputFile, outputFile)
     }
 
-    private fun checkJavaVersion() {
-        val version = System.getProperty("java.version")
-        val matcher: Matcher = Pattern.compile("^(1\\.[0-9]+)\\..*").matcher(version)
-        if (matcher.find()) {
-            val versionNum: String = matcher.group(1)
-            try {
-                val num = (versionNum.toFloat() * 10).toInt()
-                if (num < 18) {
-                    throw RuntimeException("GrowingIO autotracker gradle plugin 要求编译环境的JDK为1.8及以上")
-                }
-            } catch (e: NumberFormatException) {
-                // ignore
+    override fun transformDir(classBytes: ByteArray, inputFile: File, outputFile: File): ByteArray {
+        return extension?.let { ext ->
+            if (!ext.enableUse) {
+                return classBytes
             }
-            return
-        }
-        Log.e("GIO: check java version failed")
+            val reader = ClassReader(classBytes)
+            val writer = ClassWriter(1)
+            Log.e("${getExtensionName()} className = ${reader.className} ")
+            reader.accept(HookClassVisitor(reader.className, Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES)
+            writer.toByteArray()
+        } ?: classBytes
     }
-
 
     private fun checkLoggerDependency(project: Project): Boolean {
         for (configuration in project.configurations) {
@@ -94,7 +87,7 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
                             if (it) {
                                 Log.e("checkAutotrackDependency ->找到依赖了")
                             }
-                        } && (getSdkVersion(sdk) == "1.3.0").also {
+                        } && (getSdkVersion(sdk) == sdkVersion).also {
                             if (it) {
                                 Log.e("checkAutotrackDependency ->版本正确")
                             } else {
@@ -128,7 +121,33 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         return false
     }
 
-    fun getPluginVersion(): String {
+    private fun getSdkVersion(sdk: DependencyResult): String {
+        return getSdkName(sdk).split(":")[2]
+    }
+
+    private fun getSdkName(sdk: DependencyResult): String {
+        return sdk.requested.displayName
+    }
+
+    private fun checkJavaVersion() {
+        val version = System.getProperty("java.version")
+        val matcher: Matcher = Pattern.compile("^(1\\.[0-9]+)\\..*").matcher(version)
+        if (matcher.find()) {
+            val versionNum: String = matcher.group(1)
+            try {
+                val num = (versionNum.toFloat() * 10).toInt()
+                if (num < 18) {
+                    throw RuntimeException("GrowingIO autotracker gradle plugin 要求编译环境的JDK为1.8及以上")
+                }
+            } catch (e: NumberFormatException) {
+                // ignore
+            }
+            return
+        }
+        Log.e("GIO: check java version failed")
+    }
+
+    private fun getPluginVersion(): String {
         try {
             val jarPath: String =
                 URLDecoder.decode(File(ClassRewriter::class.java.protectionDomain.codeSource.location.path).canonicalPath)
@@ -145,14 +164,6 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             Log.e("getPluginVersion error ${e}")
             return "Cannot find GrowingIO autotrack gradle plugin version"
         }
-    }
-
-    fun getSdkVersion(sdk: DependencyResult): String {
-        return getSdkName(sdk).split(":")[2]
-    }
-
-    fun getSdkName(sdk: DependencyResult): String {
-        return sdk.requested.displayName
     }
 
     private fun onGotAndroidJarFiles(appExtension: AppExtension): List<URL> {
@@ -200,4 +211,72 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         }
     }
 
+    private class HookClassVisitor(val className: String, api: Int, cv: ClassVisitor) :
+        ClassVisitor(api, cv) {
+
+        override fun visitMethod(
+            access: Int, // 标志位 1 override /17 default / 18 private / 20 protected
+            name: String?, // 方法名称
+            descriptor: String?, // 形参和返回 ()Ljava/lang/String; 雷同 jni注册方法
+            signature: String?,
+            exceptions: Array<out String>?
+        ): MethodVisitor {
+            val visitMethod = super.visitMethod(access, name, descriptor, signature, exceptions)
+            name ?: return visitMethod
+            if (name == "<init>") return visitMethod
+            return HookMethodVisitor(className, name, Opcodes.ASM5, visitMethod)
+        }
+    }
+
+    private class HookMethodVisitor(
+        val className: String,
+        val methodName: String,
+        api: Int,
+        mv: MethodVisitor
+    ) : MethodVisitor(api, mv), Opcodes {
+        // 属于方法的开始
+        override fun visitCode() {
+            super.visitCode()
+            addLogger(true)
+        }
+
+        override fun visitInsn(opcode: Int) {
+            if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN) {
+                addLogger(false)
+            }
+            super.visitInsn(opcode)
+        }
+
+        private fun addLogger(isStart: Boolean) {
+            mv.visitFieldInsn(
+                Opcodes.GETSTATIC,
+                "com/atom/module/logger/Logger",
+                "Forest",
+                "Lcom/atom/module/logger/Logger\$Forest;"
+            )
+            mv.visitInsn(Opcodes.ICONST_3)
+            mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object")
+            mv.visitVarInsn(Opcodes.ASTORE, 3)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitInsn(Opcodes.ICONST_0)
+            mv.visitLdcInsn(className)
+            mv.visitInsn(Opcodes.AASTORE)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitInsn(Opcodes.ICONST_1)
+            mv.visitLdcInsn(methodName)
+            mv.visitInsn(Opcodes.AASTORE)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitInsn(Opcodes.ICONST_2)
+            mv.visitLdcInsn(if (isStart) "start--------------------->" else "end---------------------<")
+            mv.visitInsn(Opcodes.AASTORE)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitMethodInsn(
+                Opcodes.INVOKEVIRTUAL,
+                "com/atom/module/logger/Logger\$Forest",
+                "i",
+                "([Ljava/lang/Object;)V",
+                false
+            )
+        }
+    }
 }

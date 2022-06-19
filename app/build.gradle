@@ -20,6 +20,11 @@ plugins {
 //    enableLog = false
 //}
 
+LoggerPlugin{
+    exclude = ['aaa11111', 'aaa22222']
+    include = ['aaa33333', 'aaa44444']
+}
+
 def kspEnabled = false
 
 android {
@@ -99,6 +104,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation project(':module-annotation')
     implementation project(':module-core')
+    def logger_version = "7.0.2"
+    implementation "io.github.yongzheng7:module-logger:$logger_version"
 
     if (kspEnabled) {
         ksp project(":compiler-ksp")

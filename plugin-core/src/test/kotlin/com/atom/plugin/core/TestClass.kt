@@ -33,6 +33,7 @@ class TestClass {
     }
 
     //https://zhuanlan.zhihu.com/p/401217850
+    // https://www.cnblogs.com/dawabigbaby/p/12348956.html
     @Test
     fun test() {
         val readFileToByteArray = FileUtils.readFileToByteArray(inFile)
@@ -104,87 +105,6 @@ class TestClass {
         }
         FileUtils.writeByteArrayToFile(outFile, writer.toByteArray())
         println(" >" + outFile.absolutePath)
-    }
-
-
-    @Test
-    fun test_delete() {
-        val readFileToByteArray = FileUtils.readFileToByteArray(inFile)
-        val reader = ClassReader(readFileToByteArray)
-        println(" >reader ${reader.className} ${reader.superName}")
-        val node = ClassNode()
-        reader.accept(node, ClassReader.EXPAND_FRAMES)
-        node.methods.forEach { methodNode ->
-            val instructions = methodNode.instructions
-            var next = instructions.first
-            while (next != null) {
-                printNode(methodNode ,next )
-                if (next is MethodInsnNode) {
-                    if (next.owner.equals("android/util/Log")) {
-                        removeLog3(methodNode, next)
-                        break
-                    }
-                }
-                next = next.next
-            }
-        }
-        val writer = ClassWriter(1)
-        node.accept(writer)
-        if (outFile.exists()) {
-            FileUtils.forceDelete(outFile)
-        }
-        FileUtils.writeByteArrayToFile(outFile, writer.toByteArray())
-        println(" >" + outFile.absolutePath)
-    }
-
-    fun removeLog(methodNode: MethodNode, node: MethodInsnNode) {
-        val list = arrayListOf<AbstractInsnNode>()
-        list.add(node)
-        var previous: AbstractInsnNode? = node.previous
-        while (previous != null) {
-            list.add(previous)
-            if (previous is LineNumberNode) {
-                if (previous.type == 15) {
-                    break
-                }
-            }
-            previous = previous.previous
-        }
-
-        var next: AbstractInsnNode? = node.next
-        while (next != null) {
-            if (previous is LineNumberNode) {
-                if (previous.type == 15) {
-                    break
-                }
-            }
-            list.add(next)
-            next = next.next
-        }
-
-        for (it in list) {
-            printNode(methodNode , it , "removeLog")
-            methodNode.instructions.remove(it)
-        }
-    }
-    fun removeLog3(methodNode: MethodNode, node: MethodInsnNode) {
-        var previous : AbstractInsnNode? = node
-        while (previous != null){
-            if (previous is LabelNode) {
-                break
-            }
-            previous = previous.previous
-        }
-
-        var next : AbstractInsnNode? = previous?.next
-        while (next != null){
-            if(next is LabelNode){
-                break
-            }
-            next = next.next
-            methodNode.instructions.remove(next.previous)
-        }
-        methodNode.instructions.remove(next)
     }
 
     fun printNode(methodNode: MethodNode, next: AbstractInsnNode , tag : String ="") {
