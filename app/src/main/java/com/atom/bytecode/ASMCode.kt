@@ -1,12 +1,12 @@
 package com.atom.bytecode
 
-import com.atom.bytecode.annotation.HookIgnore
+import com.atom.module.logger.LoggerIgnore
 
 class ASMCode {
 
     fun test(){}
 
-    @HookIgnore
+    @LoggerIgnore
     fun myCode(name: String, value: Int) {
         test()
     }

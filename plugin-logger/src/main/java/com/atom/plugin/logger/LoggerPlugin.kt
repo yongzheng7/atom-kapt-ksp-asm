@@ -16,17 +16,20 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.net.URL
 import java.net.URLDecoder
+import java.util.*
 import java.util.jar.JarEntry
 import java.util.jar.JarInputStream
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 
 class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
 
     companion object {
         const val sdkName = "io.github.yongzheng7:module-logger"
-        const val sdkVersion = "7.0.2"
+        const val sdkVersion = "8.0.0"
+        const val ignore = "Lcom/atom/module/logger/LoggerIgnore;"
     }
 
     override fun getExtensionClass(): Class<LoggerExtension> {
@@ -82,13 +85,11 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         return transformClass(classBytes) { ext ->
             val result = entry.name.replaceAll("/", Matcher.quoteReplacement(File.separator))
             ext.hookPackets?.forEach {
-                Log.e("LoggerPlugin transformJar 1> ${result} , $it")
                 if (result.contains(it)) {
                     return@transformClass true
                 }
             }
             ext.hookClasses?.forEach {
-                Log.e("LoggerPlugin transformJar 2> ${result} , $it")
                 if (result.contains(it)) {
                     return@transformClass true
                 }
@@ -100,13 +101,11 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
     override fun transformDir(classBytes: ByteArray, inputFile: File, outputFile: File): ByteArray {
         return transformClass(classBytes) { ext ->
             ext.hookPackets?.forEach {
-                Log.e("LoggerPlugin transformDir 1> ${inputFile.absolutePath} , $it")
                 if (inputFile.absolutePath.contains(it)) {
                     return@transformClass true
                 }
             }
             ext.hookClasses?.forEach {
-                Log.e("LoggerPlugin transformDir 2> ${inputFile.absolutePath} , $it")
                 if (inputFile.absolutePath.contains(it)) {
                     return@transformClass true
                 }
@@ -134,10 +133,8 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
 
         override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
             Log.e("HookClassVisitor visitAnnotation  , descriptor =${descriptor} ,visible= ${visible}  ")
-            descriptor?.also {
-                if (it.contains("HookIgnore")) {
-                    hookEnabled = false
-                }
+            if (ignore == descriptor) {
+                hookEnabled = false
             }
             return super.visitAnnotation(descriptor, visible)
         }
@@ -166,13 +163,24 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
     ) : MethodVisitor(api, mv), Opcodes {
 
         private var hookEnabled = true
+        private var uuid: UUID? = null
+            get() {
+                if (field == null) {
+                    field = UUID.randomUUID()
+                }
+                return field!!
+            }
 
         override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
-            Log.e("HookMethodVisitor visitAnnotation  , descriptor =${descriptor} ,visible= ${visible}  ")
-            descriptor?.also {
-                if (it.contains("HookIgnore")) {
-                    hookEnabled = false
-                }
+            Log.e(
+                "HookMethodVisitor visitAnnotation  ${className}-${methodName} descriptor =${descriptor} >> ${
+                    ignore.equals(
+                        descriptor
+                    )
+                } "
+            )
+            if (ignore == descriptor) {
+                hookEnabled = false
             }
             return super.visitAnnotation(descriptor, visible)
         }
@@ -183,10 +191,12 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             if (hookEnabled) {
                 addLogger(true)
             }
+            Log.e("HookMethodVisitor visitCode  ${className}-${methodName} hookEnabled =${hookEnabled}  ${uuid}")
         }
 
         override fun visitInsn(opcode: Int) {
             if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN) {
+                Log.e("HookMethodVisitor visitInsn  ${className}-${methodName} hookEnabled =${hookEnabled} ${uuid}")
                 if (hookEnabled) {
                     addLogger(false)
                 }
@@ -214,7 +224,7 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             mv.visitInsn(Opcodes.AASTORE)
             mv.visitVarInsn(Opcodes.ALOAD, 3)
             mv.visitInsn(Opcodes.ICONST_2)
-            mv.visitLdcInsn(if (isStart) "--->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---" else "end---------------------<")
+            mv.visitLdcInsn(if (isStart) "┌──────${uuid.toString()}──────┐" else "└──────${uuid.toString()}──────┘")
             mv.visitInsn(Opcodes.AASTORE)
             mv.visitVarInsn(Opcodes.ALOAD, 3)
             mv.visitMethodInsn(
@@ -356,14 +366,12 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
                 ?: return
             val jackEnabled = isEnable.invoke(jackOptions) as Boolean
             if (jackEnabled) {
-                errorMessage = """
-                ========= GIO无埋点SDK不支持Jack编译器
-                ========= 由于TransformApi不支持Jack编译器且Jack项目已被Google废弃。请确保没有以下配置:
-                ========= jackOptions {
-                =========       enabled true
-                ========= }
-                
-                """.trimIndent()
+                /**
+                 * 由于TransformApi不支持Jack编译器且Jack项目已被Google废弃。请确保没有以下配置:
+                 * jackOptions {
+                 * enabled true
+                 * }
+                 */
             }
         } catch (e: java.lang.Exception) {
             // ignore

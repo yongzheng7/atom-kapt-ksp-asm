@@ -103,7 +103,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation project(':module-annotation')
     implementation project(':module-core')
-    def logger_version = "7.0.2"
+    def logger_version = "8.0.0"
     implementation "io.github.yongzheng7:module-logger:$logger_version"
 
     if (kspEnabled) {
