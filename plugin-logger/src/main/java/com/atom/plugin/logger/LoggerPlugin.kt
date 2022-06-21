@@ -180,14 +180,14 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         // 属于方法的开始
         override fun visitCode() {
             super.visitCode()
-            if(hookEnabled){
+            if (hookEnabled) {
                 addLogger(true)
             }
         }
 
         override fun visitInsn(opcode: Int) {
             if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN) {
-                if(hookEnabled){
+                if (hookEnabled) {
                     addLogger(false)
                 }
             }
@@ -206,15 +206,15 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             mv.visitVarInsn(Opcodes.ASTORE, 3)
             mv.visitVarInsn(Opcodes.ALOAD, 3)
             mv.visitInsn(Opcodes.ICONST_0)
-            mv.visitLdcInsn(className)
+            mv.visitLdcInsn(String.format("Class[%s]", className))
             mv.visitInsn(Opcodes.AASTORE)
             mv.visitVarInsn(Opcodes.ALOAD, 3)
             mv.visitInsn(Opcodes.ICONST_1)
-            mv.visitLdcInsn(methodName)
+            mv.visitLdcInsn(String.format("Func[%s]", methodName))
             mv.visitInsn(Opcodes.AASTORE)
             mv.visitVarInsn(Opcodes.ALOAD, 3)
             mv.visitInsn(Opcodes.ICONST_2)
-            mv.visitLdcInsn(if (isStart) "start--------------------->" else "end---------------------<")
+            mv.visitLdcInsn(if (isStart) "--->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>---" else "end---------------------<")
             mv.visitInsn(Opcodes.AASTORE)
             mv.visitVarInsn(Opcodes.ALOAD, 3)
             mv.visitMethodInsn(
@@ -226,38 +226,6 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
             )
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private fun checkLoggerDependency(project: Project): Boolean {
@@ -320,6 +288,7 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
     private fun getSdkName(sdk: DependencyResult): String {
         return sdk.requested.displayName
     }
+
     private fun checkJavaVersion() {
         val version = System.getProperty("java.version")
         val matcher: Matcher = Pattern.compile("^(1\\.[0-9]+)\\..*").matcher(version)
