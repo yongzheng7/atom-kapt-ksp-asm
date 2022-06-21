@@ -3,16 +3,14 @@ package com.atom.plugin.logger
 import com.android.build.gradle.AppExtension
 import com.atom.plugin.core.AbstractPlugin
 import com.atom.plugin.core.Log
+import com.atom.plugin.core.ext.replaceAll
 import com.atom.plugin.logger.ReflectUtil.findField
 import com.atom.plugin.logger.ReflectUtil.getMethod
-import com.atom.plugin.logger.compile.AutotrackBuildException
 import com.atom.plugin.logger.compile.ClassRewriter
-import com.sun.org.apache.xpath.internal.operations.Bool
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.objectweb.asm.*
-import org.objectweb.asm.tree.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -40,8 +38,39 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
     }
 
     override fun afterEvaluate(project: Project, app: AppExtension) {
-        this.extension?.enableUse = checkLoggerDependency(project)
+        this.extension?.also { ext ->
+            if (checkLoggerDependency(project)) {
+                if (ext.hookPackets.isNullOrEmpty()) {
+                    if (ext.hookClasses.isNullOrEmpty()) {
+                        ext.enableUse = false
+                    } else {
+                        ext.enableUse = true
+                    }
+                } else {
+                    ext.enableUse = true
+                }
+            } else {
+                ext.enableUse = false
+            }
+        }
         super.afterEvaluate(project, app)
+    }
+
+    private fun transformClass(
+        classBytes: ByteArray,
+        isHooK: (LoggerExtension) -> Boolean
+    ): ByteArray {
+        return extension?.let {
+            if (!it.enableUse) {
+                classBytes
+            } else {
+                if (isHooK(it)) {
+                    hookClass(classBytes)
+                } else {
+                    classBytes
+                }
+            }
+        } ?: classBytes
     }
 
     override fun transformJar(
@@ -50,27 +79,186 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         inputFile: File,
         outputFile: File
     ): ByteArray {
-        return transformDir(classBytes, inputFile, outputFile)
+        return transformClass(classBytes) { ext ->
+            val result = entry.name.replaceAll("/", Matcher.quoteReplacement(File.separator))
+            ext.hookPackets?.forEach {
+                Log.e("LoggerPlugin transformJar 1> ${result} , $it")
+                if (result.contains(it)) {
+                    return@transformClass true
+                }
+            }
+            ext.hookClasses?.forEach {
+                Log.e("LoggerPlugin transformJar 2> ${result} , $it")
+                if (result.contains(it)) {
+                    return@transformClass true
+                }
+            }
+            false
+        }
     }
 
     override fun transformDir(classBytes: ByteArray, inputFile: File, outputFile: File): ByteArray {
-        return extension?.let { ext ->
-            if (!ext.enableUse) {
-                return classBytes
+        return transformClass(classBytes) { ext ->
+            ext.hookPackets?.forEach {
+                Log.e("LoggerPlugin transformDir 1> ${inputFile.absolutePath} , $it")
+                if (inputFile.absolutePath.contains(it)) {
+                    return@transformClass true
+                }
             }
-            if(!inputFile.absolutePath.contains("com\\atom\\bytecode")){
-                return classBytes
+            ext.hookClasses?.forEach {
+                Log.e("LoggerPlugin transformDir 2> ${inputFile.absolutePath} , $it")
+                if (inputFile.absolutePath.contains(it)) {
+                    return@transformClass true
+                }
             }
-            Log.e("${getExtensionName()} absolutePath = ${inputFile.absolutePath} ")
-            val reader = ClassReader(classBytes)
-            val writer = ClassWriter(1)
-            reader.accept(
-                HookClassVisitor(reader.className, Opcodes.ASM5, writer),
-                ClassReader.EXPAND_FRAMES
-            )
-            writer.toByteArray()
-        } ?: classBytes
+            false
+        }
     }
+
+    private fun hookClass(classBytes: ByteArray): ByteArray {
+        Log.e(
+            "${getExtensionName()} hookClass \n"
+        )
+        val reader = ClassReader(classBytes)
+        val writer = ClassWriter(1)
+        reader.accept(
+            HookClassVisitor(reader.className, Opcodes.ASM5, writer),
+            ClassReader.EXPAND_FRAMES
+        )
+        return writer.toByteArray()
+    }
+
+    private class HookClassVisitor(val className: String, api: Int, cv: ClassVisitor) :
+        ClassVisitor(api, cv) {
+        private var hookEnabled = true
+
+        override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
+            Log.e("HookClassVisitor visitAnnotation  , descriptor =${descriptor} ,visible= ${visible}  ")
+            descriptor?.also {
+                if (it.contains("HookIgnore")) {
+                    hookEnabled = false
+                }
+            }
+            return super.visitAnnotation(descriptor, visible)
+        }
+
+        override fun visitMethod(
+            access: Int, // 标志位 1 override /17 default / 18 private / 20 protected
+            name: String?, // 方法名称
+            descriptor: String?, // 形参和返回 ()Ljava/lang/String; 雷同 jni注册方法
+            signature: String?,
+            exceptions: Array<out String>?
+        ): MethodVisitor {
+            Log.e("HookClassVisitor visitMethod  , access =${access} ,name= ${name}  ,descriptor =${descriptor} ,signature= ${signature} ,exceptions= ${exceptions} ")
+            val visitMethod = super.visitMethod(access, name, descriptor, signature, exceptions)
+            name ?: return visitMethod
+            if (name == "<init>") return visitMethod
+            if (!hookEnabled) return visitMethod
+            return HookMethodVisitor(className, name, Opcodes.ASM5, visitMethod)
+        }
+    }
+
+    private class HookMethodVisitor(
+        val className: String,
+        val methodName: String,
+        api: Int,
+        mv: MethodVisitor
+    ) : MethodVisitor(api, mv), Opcodes {
+
+        private var hookEnabled = true
+
+        override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor {
+            Log.e("HookMethodVisitor visitAnnotation  , descriptor =${descriptor} ,visible= ${visible}  ")
+            descriptor?.also {
+                if (it.contains("HookIgnore")) {
+                    hookEnabled = false
+                }
+            }
+            return super.visitAnnotation(descriptor, visible)
+        }
+
+        // 属于方法的开始
+        override fun visitCode() {
+            super.visitCode()
+            if(hookEnabled){
+                addLogger(true)
+            }
+        }
+
+        override fun visitInsn(opcode: Int) {
+            if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN) {
+                if(hookEnabled){
+                    addLogger(false)
+                }
+            }
+            super.visitInsn(opcode)
+        }
+
+        private fun addLogger(isStart: Boolean) {
+            mv.visitFieldInsn(
+                Opcodes.GETSTATIC,
+                "com/atom/module/logger/Logger",
+                "Forest",
+                "Lcom/atom/module/logger/Logger\$Forest;"
+            )
+            mv.visitInsn(Opcodes.ICONST_3)
+            mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object")
+            mv.visitVarInsn(Opcodes.ASTORE, 3)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitInsn(Opcodes.ICONST_0)
+            mv.visitLdcInsn(className)
+            mv.visitInsn(Opcodes.AASTORE)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitInsn(Opcodes.ICONST_1)
+            mv.visitLdcInsn(methodName)
+            mv.visitInsn(Opcodes.AASTORE)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitInsn(Opcodes.ICONST_2)
+            mv.visitLdcInsn(if (isStart) "start--------------------->" else "end---------------------<")
+            mv.visitInsn(Opcodes.AASTORE)
+            mv.visitVarInsn(Opcodes.ALOAD, 3)
+            mv.visitMethodInsn(
+                Opcodes.INVOKEVIRTUAL,
+                "com/atom/module/logger/Logger\$Forest",
+                "i",
+                "([Ljava/lang/Object;)V",
+                false
+            )
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private fun checkLoggerDependency(project: Project): Boolean {
         for (configuration in project.configurations) {
@@ -132,7 +320,6 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
     private fun getSdkName(sdk: DependencyResult): String {
         return sdk.requested.displayName
     }
-
     private fun checkJavaVersion() {
         val version = System.getProperty("java.version")
         val matcher: Matcher = Pattern.compile("^(1\\.[0-9]+)\\..*").matcher(version)
@@ -215,73 +402,4 @@ class LoggerPlugin : AbstractPlugin<LoggerExtension>() {
         }
     }
 
-    private class HookClassVisitor(val className: String, api: Int, cv: ClassVisitor) :
-        ClassVisitor(api, cv) {
-
-        override fun visitMethod(
-            access: Int, // 标志位 1 override /17 default / 18 private / 20 protected
-            name: String?, // 方法名称
-            descriptor: String?, // 形参和返回 ()Ljava/lang/String; 雷同 jni注册方法
-            signature: String?,
-            exceptions: Array<out String>?
-        ): MethodVisitor {
-            Log.e("HookClassVisitor visitMethod  , access =${access} ,name= ${name}  ,descriptor =${descriptor} ,signature= ${signature} ,exceptions= ${ exceptions} ")
-            val visitMethod = super.visitMethod(access, name, descriptor, signature, exceptions)
-            name ?: return visitMethod
-            if (name == "<init>") return visitMethod
-            return HookMethodVisitor(className, name, Opcodes.ASM5, visitMethod)
-        }
-    }
-
-    private class HookMethodVisitor(
-        val className: String,
-        val methodName: String,
-        api: Int,
-        mv: MethodVisitor
-    ) : MethodVisitor(api, mv), Opcodes {
-        // 属于方法的开始
-        override fun visitCode() {
-            super.visitCode()
-            addLogger(true)
-        }
-
-        override fun visitInsn(opcode: Int) {
-            if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN) {
-                addLogger(false)
-            }
-            super.visitInsn(opcode)
-        }
-
-        private fun addLogger(isStart: Boolean) {
-            mv.visitFieldInsn(
-                Opcodes.GETSTATIC,
-                "com/atom/module/logger/Logger",
-                "Forest",
-                "Lcom/atom/module/logger/Logger\$Forest;"
-            )
-            mv.visitInsn(Opcodes.ICONST_3)
-            mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object")
-            mv.visitVarInsn(Opcodes.ASTORE, 3)
-            mv.visitVarInsn(Opcodes.ALOAD, 3)
-            mv.visitInsn(Opcodes.ICONST_0)
-            mv.visitLdcInsn(className)
-            mv.visitInsn(Opcodes.AASTORE)
-            mv.visitVarInsn(Opcodes.ALOAD, 3)
-            mv.visitInsn(Opcodes.ICONST_1)
-            mv.visitLdcInsn(methodName)
-            mv.visitInsn(Opcodes.AASTORE)
-            mv.visitVarInsn(Opcodes.ALOAD, 3)
-            mv.visitInsn(Opcodes.ICONST_2)
-            mv.visitLdcInsn(if (isStart) "start--------------------->" else "end---------------------<")
-            mv.visitInsn(Opcodes.AASTORE)
-            mv.visitVarInsn(Opcodes.ALOAD, 3)
-            mv.visitMethodInsn(
-                Opcodes.INVOKEVIRTUAL,
-                "com/atom/module/logger/Logger\$Forest",
-                "i",
-                "([Ljava/lang/Object;)V",
-                false
-            )
-        }
-    }
 }

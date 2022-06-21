@@ -14,13 +14,13 @@ dependencies {
     implementation gradleApi()
     implementation "com.android.tools.build:gradle-api:$gradle_version"
     implementation "com.android.tools.build:gradle:$gradle_version"
-    implementation "com.atom.plugin:core-plugin:2.0.0"
+    implementation "com.atom.plugin:core-plugin:3.0.0"
 }
 
 //---------------------------publish maven-----------------------------------
 ext {
     GROUP_ID = 'com.atom.plugin'
     ARTIFACT_ID = 'aap-plugin'
-    VERSION_ID = '1.0.0'
+    VERSION_ID = '3.0.0'
 }
 apply from: "../gradle/plugin-publish.gradle"

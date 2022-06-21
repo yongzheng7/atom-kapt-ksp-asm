@@ -21,8 +21,7 @@ plugins {
 //}
 
 LoggerPlugin{
-    exclude = ['aaa11111', 'aaa22222']
-    include = ['aaa33333', 'aaa44444']
+    hookClasses = ['com\\atom\\bytecode\\ASMCode']
 }
 
 def kspEnabled = false

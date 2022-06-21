@@ -12,15 +12,9 @@ class MainActivity : AppCompatActivity(), ActivityApi {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Log.e("MainActivity", "1")
-        Log.d("MainActivity", "2")
-        Log.w("MainActivity", "3")
-        Log.i("MainActivity", "4")
-        Log.i("MainActivity", AapEngine.toString())
-        test()
-    }
-
-    fun test() {
-        Logger.i("asdasdad","asdasd")
+        ASMCode().also {
+            it.myCode("asd", 1)
+            it.asmCode("asd", 1)
+        }
     }
 }
