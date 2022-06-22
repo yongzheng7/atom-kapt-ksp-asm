@@ -34,6 +34,7 @@ dependencies {
 ext {
     GROUP_ID = 'com.atom.plugin'
     ARTIFACT_ID = 'core-plugin'
-    VERSION_ID = '3.0.0'
+    VERSION_ID = '1.0.0'
+    NAME = "Atom-Plugin-Core"
 }
 apply from: "../gradle/plugin-publish.gradle"

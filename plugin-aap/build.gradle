@@ -21,6 +21,7 @@ dependencies {
 ext {
     GROUP_ID = 'com.atom.plugin'
     ARTIFACT_ID = 'aap-plugin'
-    VERSION_ID = '3.0.0'
+    VERSION_ID = '1.0.0'
+    NAME = "Atom-Plugin-Aap"
 }
 apply from: "../gradle/plugin-publish.gradle"
